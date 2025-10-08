@@ -93,7 +93,7 @@ export default function Header({
             onClick={() => scrollToSection("home")}
           >
             <img
-              src="/src/assets/images/logo_tamhar.png"
+              src="/images/logo_tamhar.png"
               alt="Logo SDS Taman Harapan"
               className="h-14 w-14 object-contain"
             />

@@ -25,7 +25,7 @@ export default function About() {
           <div className="relative">
             <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
              <img
-        src="src/assets/images/img_guru_wanita.jpeg"
+        src="/images/img_guru_wanita.jpeg"
         alt="Guru sedang mengajar"
         className="w-full h-full object-cover"
       />

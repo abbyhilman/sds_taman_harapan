@@ -24,7 +24,7 @@ export default function Hero({ setActiveSection }: HeroProps) {
     <section id="home" className="pt-20 relative overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/images/bg_tamhar.png"
+          src="/images/bg_tamhar.png"
           alt="Background"
           className="w-full h-full object-cover opacity-90"
         />
@@ -68,7 +68,7 @@ export default function Hero({ setActiveSection }: HeroProps) {
           <div className="relative hidden lg:block">
             <div className="aspect-square rounded-2xl bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl border-4 border-white/20">
               <img
-                src="src/assets/images/img_welcome_dua.png"
+                src="images/img_welcome_dua.png"
                 alt="Siswa SDS Taman Harapan"
                 className="w-full h-full object-cover"
               />

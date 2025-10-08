@@ -30,7 +30,7 @@ export default function Prestasi() {
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/images/bg_tamhar.png"
+          src="/images/bg_tamhar.png"
           alt="Background Prestasi"
           className="w-full h-full object-cover opacity-90"
         />
@@ -108,11 +108,11 @@ export default function Prestasi() {
             <div
               className="aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 cursor-pointer hover:scale-[1.02] transition-transform"
               onClick={() =>
-                openImage("/src/assets/images/img_prestasi_satu.jpeg")
+                openImage("/images/img_prestasi_satu.jpeg")
               }
             >
               <img
-                src="/src/assets/images/img_prestasi_satu.jpeg"
+                src="/images/img_prestasi_satu.jpeg"
                 alt="Prestasi SDS Taman Harapan"
                 className="w-full h-full object-cover"
               />
@@ -123,11 +123,11 @@ export default function Prestasi() {
               <div
                 className="w-40 h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
                 onClick={() =>
-                  openImage("/src/assets/images/img_prestasi_dua.jpeg")
+                  openImage("/images/img_prestasi_dua.jpeg")
                 }
               >
                 <img
-                  src="/src/assets/images/img_prestasi_dua.jpeg"
+                  src="/images/img_prestasi_dua.jpeg"
                   alt="Prestasi Dua"
                   className="w-full h-full object-cover"
                 />
@@ -135,11 +135,11 @@ export default function Prestasi() {
               <div
                 className="w-40 h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
                 onClick={() =>
-                  openImage("/src/assets/images/img_prestasi_tiga.jpeg")
+                  openImage("/images/img_prestasi_tiga.jpeg")
                 }
               >
                 <img
-                  src="/src/assets/images/img_prestasi_tiga.jpeg"
+                  src="/images/img_prestasi_tiga.jpeg"
                   alt="Prestasi Tiga"
                   className="w-full h-full object-cover"
                 />

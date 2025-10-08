@@ -146,8 +146,8 @@ export default function Programs() {
             {/* Dua Gambar Klikable */}
             <div className="grid grid-cols-2 gap-4">
               {[
-                "src/assets/images/img_ekstrakulikuler_satu.jpeg",
-                "src/assets/images/img_ekstrakulikuler_dua.jpeg",
+                "images/img_ekstrakulikuler_satu.jpeg",
+                "images/img_ekstrakulikuler_dua.jpeg",
               ].map((src, i) => (
                 <div
                   key={i}

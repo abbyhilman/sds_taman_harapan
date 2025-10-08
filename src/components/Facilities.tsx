@@ -34,7 +34,7 @@ export default function Facilities() {
       icon: Dumbbell,
       title: 'Lapangan Olahraga',
       description: 'Area olahraga luas untuk aktivitas fisik dan ekstrakurikuler',
-      image: 'src/assets/images/img_lapangan.jpeg',
+      image: 'images/img_lapangan.jpeg',
       color: 'from-green-500 to-emerald-600'
     },
     {
