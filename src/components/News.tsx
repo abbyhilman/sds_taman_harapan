@@ -1,4 +1,6 @@
 import { Calendar, ArrowRight, Users, Flag } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function News() {
   const news = [
@@ -16,11 +18,22 @@ export default function News() {
       date: 'Agustus 2024',
       category: 'Peringatan Nasional',
       description: 'Perayaan HUT RI ke-80 di SDS Taman Harapan diisi dengan berbagai lomba, upacara bendera, dan kegiatan yang menumbuhkan semangat nasionalisme dan cinta tanah air kepada seluruh siswa.',
-      image: 'https://images.pexels.com/photos/7713176/pexels-photo-7713176.jpeg?auto=compress&cs=tinysrgb&w=800',
+      image: 'images/img_welcome_dua.png',
       icon: Flag,
       color: 'from-red-500 to-red-600'
     }
   ];
+
+    const navigate = useNavigate();
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleSeeAllNews = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      navigate('/all-news');
+      setIsLoading(false);
+    }, 1000); // Simulate loading delay for shimmer effect
+  };
 
   return (
     <section id="news" className="py-20 bg-gradient-to-br from-orange-50 to-gray-50">
@@ -74,7 +87,7 @@ export default function News() {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-full hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl">
+          <button onClick={handleSeeAllNews} className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-full hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl">
             Lihat Semua Berita
             <ArrowRight className="ml-2 h-5 w-5" />
           </button>
