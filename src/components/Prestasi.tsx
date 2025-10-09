@@ -104,48 +104,67 @@ export default function Prestasi() {
 
           {/* Kanan - Gambar prestasi */}
           <div className="relative">
-            {/* Gambar utama */}
-            <div
-              className="aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 cursor-pointer hover:scale-[1.02] transition-transform"
-              onClick={() =>
-                openImage("/images/img_prestasi_satu.jpeg")
-              }
-            >
-              <img
-                src="/images/img_prestasi_satu.jpeg"
-                alt="Prestasi SDS Taman Harapan"
-                className="w-full h-full object-cover"
-              />
-            </div>
+  {/* Gambar utama */}
+  <div
+    className="aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 cursor-pointer hover:scale-[1.02] transition-transform"
+    onClick={() => openImage("/images/img_prestasi_satu.jpeg")}
+  >
+    <img
+      src="/images/img_prestasi_satu.jpeg"
+      alt="Prestasi SDS Taman Harapan"
+      className="w-full h-full object-cover"
+    />
+  </div>
 
-            {/* Gambar kecil */}
-            <div className="absolute -bottom-8 -left-8 flex space-x-6">
-              <div
-                className="w-40 h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
-                onClick={() =>
-                  openImage("/images/img_prestasi_dua.jpeg")
-                }
-              >
-                <img
-                  src="/images/img_prestasi_dua.jpeg"
-                  alt="Prestasi Dua"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div
-                className="w-40 h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
-                onClick={() =>
-                  openImage("/images/img_prestasi_tiga.jpeg")
-                }
-              >
-                <img
-                  src="/images/img_prestasi_tiga.jpeg"
-                  alt="Prestasi Tiga"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
+  {/* Untuk layar besar (desktop) */}
+  <div className="hidden sm:flex absolute -bottom-8 -left-8 space-x-6">
+    <div
+      className="w-32 sm:w-36 md:w-40 h-32 sm:h-36 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
+      onClick={() => openImage("/images/img_prestasi_dua.jpeg")}
+    >
+      <img
+        src="/images/img_prestasi_dua.jpeg"
+        alt="Prestasi Dua"
+        className="w-full h-full object-cover"
+      />
+    </div>
+    <div
+      className="w-32 sm:w-36 md:w-40 h-32 sm:h-36 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
+      onClick={() => openImage("/images/img_prestasi_tiga.jpeg")}
+    >
+      <img
+        src="/images/img_prestasi_tiga.jpeg"
+        alt="Prestasi Tiga"
+        className="w-full h-full object-cover"
+      />
+    </div>
+  </div>
+
+  {/* Untuk layar kecil (mobile) */}
+  <div className="flex sm:hidden justify-center mt-6 space-x-4">
+    <div
+      className="w-32 h-32 rounded-xl overflow-hidden shadow-lg border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
+      onClick={() => openImage("/images/img_prestasi_dua.jpeg")}
+    >
+      <img
+        src="/images/img_prestasi_dua.jpeg"
+        alt="Prestasi Dua"
+        className="w-full h-full object-cover"
+      />
+    </div>
+    <div
+      className="w-32 h-32 rounded-xl overflow-hidden shadow-lg border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
+      onClick={() => openImage("/images/img_prestasi_tiga.jpeg")}
+    >
+      <img
+        src="/images/img_prestasi_tiga.jpeg"
+        alt="Prestasi Tiga"
+        className="w-full h-full object-cover"
+      />
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
 
