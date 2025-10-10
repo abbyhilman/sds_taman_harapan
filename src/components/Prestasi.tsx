@@ -1,29 +1,43 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trophy, Star, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
+
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  year: number;
+  image_url: string;
+}
 
 export default function Prestasi() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const offset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-    }
-  };
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("achievements")
+        .select("*")
+        .order("year", { ascending: false });
+      if (error) {
+        console.error("❌ Error fetching achievements:", error);
+      } else {
+        setAchievements(data || []);
+      }
+      setLoading(false);
+    };
 
-  // Fungsi untuk menampilkan popup
-  const openImage = (src: string) => {
-    setSelectedImage(src);
-  };
+    fetchAchievements();
+  }, []);
 
-  // Fungsi untuk menutup popup
-  const closeImage = () => {
-    setSelectedImage(null);
-  };
+  const openImage = (src: string) => setSelectedImage(src);
+  const closeImage = () => setSelectedImage(null);
 
   return (
     <section id="prestasi" className="relative overflow-hidden pt-20">
@@ -54,117 +68,103 @@ export default function Prestasi() {
             </h2>
 
             <p className="text-lg text-white/95 leading-relaxed drop-shadow">
-              SDS Taman Harapan terus berkomitmen menumbuhkan semangat
-              kompetisi sehat dan membangun karakter unggul melalui prestasi di
-              berbagai bidang — akademik, olahraga, dan seni.
+              SDS Taman Harapan terus berkomitmen menumbuhkan semangat kompetisi
+              sehat dan membangun karakter unggul melalui prestasi di berbagai
+              bidang — akademik, olahraga, dan seni.
             </p>
 
-            {/* Daftar Prestasi */}
+            {/* Daftar Prestasi dari Supabase */}
             <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <Star className="h-6 w-6 text-yellow-400 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-orange-300">
-                    Juara Umum Pencak Silat Antar Sekolah
-                  </h3>
-                  <p className="text-white/90 text-sm">
-                    Membuktikan ketangguhan dan sportivitas siswa dalam ajang
-                    tingkat Jakarta Utara.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <Star className="h-6 w-6 text-yellow-400 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-orange-300">
-                    Gelar Karya Projek P5
-                  </h3>
-                  <p className="text-white/90 text-sm">
-                    Pameran hasil karya siswa dengan tema “Bhinneka Tunggal Ika”
-                    yang menampilkan kreativitas luar biasa.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <Star className="h-6 w-6 text-yellow-400 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-orange-300">
-                    Kompetisi Seni & Budaya Sekolah
-                  </h3>
-                  <p className="text-white/90 text-sm">
-                    Menunjukkan bakat dan semangat kolaboratif siswa dalam
-                    berbagai lomba seni, musik, dan tari.
-                  </p>
-                </div>
-              </div>
+              {loading ? (
+                <>
+                  <div className="h-5 bg-white/40 rounded w-2/3 animate-pulse" />
+                  <div className="h-5 bg-white/40 rounded w-1/2 animate-pulse" />
+                  <div className="h-5 bg-white/40 rounded w-3/4 animate-pulse" />
+                </>
+              ) : achievements.length > 0 ? (
+                achievements.slice(0, 4).map((item) => (
+                  <div key={item.id} className="flex items-start space-x-3">
+                    <Star className="h-6 w-6 text-yellow-400 mt-1" />
+                    <div>
+                      <h3 className="font-semibold text-orange-300">
+                        {item.title} ({item.year})
+                      </h3>
+                      <p className="text-white/90 text-sm">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-white/80 text-sm italic">
+                  Belum ada data prestasi yang tersedia.
+                </p>
+              )}
             </div>
+
+            {/* Tombol "Lihat Semua Prestasi" */}
+            {!loading && achievements.length > 4 && (
+              <button
+                onClick={() => navigate("/all-prestasi")}
+                className="mt-6 inline-flex items-center bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-full shadow-md transition-colors duration-200"
+              >
+                Lihat Semua Prestasi →
+              </button>
+            )}
           </div>
 
           {/* Kanan - Gambar prestasi */}
           <div className="relative">
-  {/* Gambar utama */}
-  <div
-    className="aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 cursor-pointer hover:scale-[1.02] transition-transform"
-    onClick={() => openImage("/images/img_prestasi_satu.jpeg")}
-  >
-    <img
-      src="/images/img_prestasi_satu.jpeg"
-      alt="Prestasi SDS Taman Harapan"
-      className="w-full h-full object-cover"
-    />
-  </div>
+            <div
+              className="aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 cursor-pointer hover:scale-[1.02] transition-transform"
+              onClick={() =>
+                achievements[0]?.image_url && openImage(achievements[0].image_url)
+              }
+            >
+              <img
+                src={
+                  achievements[0]?.image_url ||
+                  "/images/img_prestasi_satu.jpeg"
+                }
+                alt={achievements[0]?.title || "Prestasi Utama"}
+                className="w-full h-full object-cover"
+              />
+            </div>
 
-  {/* Untuk layar besar (desktop) */}
-  <div className="hidden sm:flex absolute -bottom-8 -left-8 space-x-6">
-    <div
-      className="w-32 sm:w-36 md:w-40 h-32 sm:h-36 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
-      onClick={() => openImage("/images/img_prestasi_dua.jpeg")}
-    >
-      <img
-        src="/images/img_prestasi_dua.jpeg"
-        alt="Prestasi Dua"
-        className="w-full h-full object-cover"
-      />
-    </div>
-    <div
-      className="w-32 sm:w-36 md:w-40 h-32 sm:h-36 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
-      onClick={() => openImage("/images/img_prestasi_tiga.jpeg")}
-    >
-      <img
-        src="/images/img_prestasi_tiga.jpeg"
-        alt="Prestasi Tiga"
-        className="w-full h-full object-cover"
-      />
-    </div>
-  </div>
+            {/* Gambar pendukung */}
+            <div className="hidden sm:flex absolute -bottom-8 -left-8 space-x-6">
+              {achievements.slice(1, 3).map((item) => (
+                <div
+                  key={item.id}
+                  className="w-32 sm:w-36 md:w-40 h-32 sm:h-36 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => openImage(item.image_url)}
+                >
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
 
-  {/* Untuk layar kecil (mobile) */}
-  <div className="flex sm:hidden justify-center mt-6 space-x-4">
-    <div
-      className="w-32 h-32 rounded-xl overflow-hidden shadow-lg border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
-      onClick={() => openImage("/images/img_prestasi_dua.jpeg")}
-    >
-      <img
-        src="/images/img_prestasi_dua.jpeg"
-        alt="Prestasi Dua"
-        className="w-full h-full object-cover"
-      />
-    </div>
-    <div
-      className="w-32 h-32 rounded-xl overflow-hidden shadow-lg border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
-      onClick={() => openImage("/images/img_prestasi_tiga.jpeg")}
-    >
-      <img
-        src="/images/img_prestasi_tiga.jpeg"
-        alt="Prestasi Tiga"
-        className="w-full h-full object-cover"
-      />
-    </div>
-  </div>
-</div>
-
+            {/* Mobile view */}
+            <div className="flex sm:hidden justify-center mt-6 space-x-4">
+              {achievements.slice(1, 3).map((item) => (
+                <div
+                  key={item.id}
+                  className="w-32 h-32 rounded-xl overflow-hidden shadow-lg border-4 border-white/20 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => openImage(item.image_url)}
+                >
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

@@ -1,74 +1,45 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar } from "lucide-react";
+import { Calendar, Users, Flag } from "lucide-react";
+import { supabase } from "../lib/supabase";
 import NewsShimmer from "./NewsShimeer";
 
 interface NewsItem {
+  id: string;
   title: string;
   date: string;
   category: string;
-  description: string;
-  image: string;
-  icon: React.ComponentType<{ className?: string }>;
+  content: string;
+  thumbnail_url: string;
+  icon: string;
   color: string;
 }
 
-const news: NewsItem[] = [
-  {
-    title: "Masa Pengenalan Lingkungan Sekolah (MPLS)",
-    date: "Juli 2024",
-    category: "Kegiatan Sekolah",
-    description:
-      "Kegiatan MPLS untuk siswa baru tahun ajaran 2024/2025 berlangsung meriah. Siswa baru diperkenalkan dengan lingkungan sekolah, tata tertib, dan berbagai kegiatan positif untuk membangun semangat belajar.",
-    image:
-      "https://images.pexels.com/photos/8466664/pexels-photo-8466664.jpeg?auto=compress&cs=tinysrgb&w=800",
-    icon: () => <></>,
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    title: "HUT Republik Indonesia Ke-80",
-    date: "Agustus 2024",
-    category: "Peringatan Nasional",
-    description:
-      "Perayaan HUT RI ke-80 di SDS Taman Harapan diisi dengan berbagai lomba, upacara bendera, dan kegiatan yang menumbuhkan semangat nasionalisme dan cinta tanah air kepada seluruh siswa.",
-    image: "images/img_welcome_dua.png",
-    icon: () => <></>,
-    color: "from-red-500 to-red-600",
-  },
-  {
-    title: "Peringatan Hari Guru Nasional",
-    date: "November 2024",
-    category: "Peringatan Nasional",
-    description:
-      "Kegiatan peringatan Hari Guru Nasional dengan berbagai penghargaan untuk guru berprestasi dan acara apresiasi di SDS Taman Harapan.",
-    image:
-      "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800",
-    icon: () => <></>,
-    color: "from-yellow-500 to-yellow-600",
-  },
-  {
-    title: "Lomba Lari Estafet Antar Kelas",
-    date: "September 2024",
-    category: "Kegiatan Sekolah",
-    description:
-      "Lomba lari estafet antar kelas yang diikuti oleh siswa dengan semangat tinggi untuk memeriahkan hari olahraga sekolah.",
-    image:
-      "https://images.pexels.com/photos/416322/pexels-photo-416322.jpeg?auto=compress&cs=tinysrgb&w=800",
-    icon: () => <></>,
-    color: "from-green-500 to-green-600",
-  },
-];
-
 const AllNews: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [news, setNews] = React.useState<NewsItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const fetchNews = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .order("published_date", { ascending: false });
+
+      if (error) {
+        console.error("❌ Error fetching news:", error);
+      } else {
+        setNews(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchNews();
   }, []);
 
-  if (isLoading) {
+  if (loading) {
     return <NewsShimmer />;
   }
 
@@ -80,7 +51,6 @@ const AllNews: React.FC = () => {
         alt="Background"
         className="w-full h-full object-cover opacity-90 absolute top-0 left-0 z-0"
       />
-
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
@@ -96,51 +66,66 @@ const AllNews: React.FC = () => {
           {/* Left Side Image */}
           <div className="md:w-1/3 w-full flex justify-center md:justify-start animate-fade-in">
             <img
-              src="/images/img_lapangan.jpeg"
+              src="/images/img_school_news.png"
               alt="Left Image"
               className="w-full h-auto rounded-lg border-4 border-orange-500 shadow-md"
             />
           </div>
 
           {/* News Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:w-2/3 w-full animate-fade-in">
-            {news.map((item, index) => (
-              <div
-                key={index}
-                className={`overflow-hidden transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-lg rounded-md ${
-                  index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                }`}
-              >
-                <div className="relative h-28 overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover opacity-60 transition-transform duration-500 hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                  <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center">
-                    <Calendar className="h-3 w-3 inline mr-1" />
-                    {item.date}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:w-2/3 w-full animate-fade-in">
+            {news.map((item) => {
+              const Icon =
+                item.icon === "Users"
+                  ? Users
+                  : item.icon === "Flag"
+                  ? Flag
+                  : Users;
+
+              return (
+                <div
+                  key={item.id}
+                  className="overflow-hidden transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl rounded-xl bg-white"
+                >
+                  {/* ✅ Gambar lebih besar & lebih dominan */}
+                  <div className="relative h-44 sm:h-52 overflow-hidden">
+                    <img
+                      src={
+                        item.thumbnail_url ||
+                        "https://placehold.co/600x400?text=No+Image"
+                      }
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                    <div className="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center">
+                      <Calendar className="h-3.5 w-3.5 inline mr-1 text-orange-600" />
+                      {item.date}
+                    </div>
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                      {item.content.substring(0, 120)}...
+                    </p>
+                    <button
+                      onClick={() => navigate(`/news/${item.id}`)}
+                      className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+                    >
+                      Baca Selengkapnya →
+                    </button>
                   </div>
                 </div>
-                <div className="p-3">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                    {item.title}
-                  </h3>
-                  <button
-                    onClick={() => navigate(`/news/${index}`)}
-                    className="text-xs font-medium text-orange-600 hover:text-orange-700"
-                  >
-                    Baca Selengkapnya →
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Animasi sederhana */}
+      {/* Animasi */}
       <style>{`
         .animate-fade-in {
           animation: fadeIn 0.8s ease-in-out forwards;

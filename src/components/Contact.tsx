@@ -1,5 +1,6 @@
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import { useState, FormEvent } from "react";
+import { supabase } from "../lib/supabase"; // ✅ tambahkan ini
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -17,13 +18,28 @@ export default function Contact() {
     setIsSubmitting(true);
     setSubmitMessage("");
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const { error } = await supabase.from("contact_messages").insert([
+        {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        },
+      ]);
 
-    setSubmitMessage(
-      "Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda."
-    );
-    setFormData({ name: "", email: "", phone: "", message: "" });
-    setIsSubmitting(false);
+      if (error) throw error;
+
+      setSubmitMessage(
+        "Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda."
+      );
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error: any) {
+      console.error(error);
+      setSubmitMessage("Terjadi kesalahan. Silakan coba lagi nanti.");
+    } finally {
+      setIsSubmitting(false);
+    }
 
     setTimeout(() => setSubmitMessage(""), 5000);
   };
@@ -46,7 +62,19 @@ export default function Contact() {
     {
       icon: Mail,
       title: "Email",
-      content: "sdstamanharapan.jakut@gmail.com",
+      // ✅ dua email, hanya satu bisa diklik
+      content: (
+        <>
+          <a
+            href="mailto:sdstamanharapan.jakut@gmail.com"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            sdstamanharapan.jakut@gmail.com
+          </a>
+          <br />
+          <span className="text-gray-600">sdstamanharapan.info@gmail.com</span>
+        </>
+      ),
       subcontent: "Kami akan membalas dalam 1x24 jam",
       color: "from-green-500 to-green-600",
     },

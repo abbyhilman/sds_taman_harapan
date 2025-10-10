@@ -13,6 +13,8 @@ import AllNews from "./components/AllNews";
 import NewsDetail from "./components/NewsDetail";
 import Gallery from "./components/Gallery";
 import AllGallery from "./components/AllGallery";
+import AllPrestasi from "./components/AllPrestasi";
+import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -41,10 +43,17 @@ const App: React.FC = () => {
             }
           />
           <Route path="/all-news" element={<AllNews />} />
+          <Route path="/all-prestasi" element={<AllPrestasi />} />
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/all-gallery" element={<AllGallery />} />
         </Routes>
+
         <Footer />
+        
+        <FloatingWhatsappButton
+          phoneNumber="6281234567890"
+          message="Halo! Saya ingin menanyakan informasi tentang SDS Taman Harapan."
+        />
       </div>
     </BrowserRouter>
   );

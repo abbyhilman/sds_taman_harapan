@@ -47,8 +47,6 @@ const Gallery: React.FC = () => {
         .select("*")
         .order("order_position", { ascending: true });
 
-      console.log(data);
-
       if (error) throw error;
       setPhotos(data || []);
     } catch (error: any) {
@@ -60,7 +58,6 @@ const Gallery: React.FC = () => {
     } finally {
       setLoading(false);
     }
-    console.log("ini photo nya ====>" + photos);
   };
 
   const fetchVideos = async () => {
