@@ -21,6 +21,7 @@ export default function Header({
     { id: "facilities", label: "Fasilitas" },
     { id: "prestasi", label: "Prestasi" },
     { id: "news", label: "Berita" },
+    { id: "gallery", label: "Galeri" }, // Ditambahkan
     { id: "contact", label: "Kontak" },
   ];
 
