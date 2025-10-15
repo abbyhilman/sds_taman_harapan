@@ -48,8 +48,8 @@ export default function Contact() {
     {
       icon: MapPin,
       title: "Alamat",
-      content: "Jl. Warakas V Gg. 2 No.141, RT.6/RW.8",
-      subcontent: "Jakarta Utara, 14340",
+      content: "Jl. Warakas V Gg. 2 No.141, RT.05/RW.08",
+      subcontent: "Jakarta Utara, 14370",
       color: "from-orange-500 to-orange-600",
     },
     {

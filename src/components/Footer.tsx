@@ -104,7 +104,7 @@ export default function Footer() {
               <li className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
                 <span className="text-gray-400 text-sm">
-                  Jl. Warakas V Gg. 2 No.141, RT.6/RW.8, Jakarta Utara, 14340
+                  Jl. Warakas V Gg. 2 No.141, RT.05/RW.08, Jakarta Utara, 14370
                 </span>
               </li>
               <li className="flex items-center space-x-3">
