@@ -110,16 +110,16 @@ export default function Footer() {
               <li className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-orange-500 flex-shrink-0" />
                 <a href="tel:02143576611" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  (021) 4357611
+                  (+62) 87789164894
                 </a>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-orange-500 flex-shrink-0" />
                 <a
-                  href="mailto:sdstamanharapan.jakut@gmail.com"
+                  href="mailto:sdstamanharapan_jakut@yahoo.com"
                   className="text-gray-400 hover:text-white transition-colors text-sm break-all"
                 >
-                  sdstamanharapan.jakut@gmail.com
+                  sdstamanharapan_jakut@yahoo.com
                 </a>
               </li>
             </ul>
