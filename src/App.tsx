@@ -51,7 +51,7 @@ const App: React.FC = () => {
         <Footer />
         
         <FloatingWhatsappButton
-          phoneNumber="6281234567890"
+          phoneNumber="6287789164894"
           message="Halo! Saya ingin menanyakan informasi tentang SDS Taman Harapan."
         />
       </div>

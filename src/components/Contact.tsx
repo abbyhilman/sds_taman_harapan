@@ -55,7 +55,7 @@ export default function Contact() {
     {
       icon: Phone,
       title: "Telepon",
-      content: "(021) 4357611",
+      content: "(+62) 87789164894",
       subcontent: "Senin - Jumat: 07:00 - 15:00 WIB",
       color: "from-blue-500 to-blue-600",
     },
@@ -69,10 +69,10 @@ export default function Contact() {
             href="mailto:sdstamanharapan.jakut@gmail.com"
             className="text-blue-600 underline hover:text-blue-800"
           >
-            sdstamanharapan.jakut@gmail.com
+            sdstamanharapan_jakut@yahoo.com
           </a>
           <br />
-          <span className="text-gray-600">sdstamanharapan.info@gmail.com</span>
+          <span className="text-gray-600">sdstamanharapan.jakut@gmail.com</span>
         </>
       ),
       subcontent: "Kami akan membalas dalam 1x24 jam",
