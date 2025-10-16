@@ -1,6 +1,17 @@
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
-import { useState, FormEvent } from "react";
-import { supabase } from "../lib/supabase"; // ✅ tambahkan ini
+import { useState, useEffect, FormEvent } from "react";
+import { supabase } from "../lib/supabase";
+
+interface ContactInfo {
+  id: string;
+  address_line1: string;
+  address_line2: string;
+  phone: string;
+  email1: string;
+  email2: string;
+  operating_hours: string;
+  operating_hours_subtext: string;
+}
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -9,9 +20,32 @@ export default function Contact() {
     phone: "",
     message: "",
   });
-
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("contact_info")
+          .select("*")
+          .single(); // Mengambil satu baris data
+
+        if (error) throw error;
+        setContactInfo(data);
+      } catch (error: any) {
+        console.error("Error fetching contact info:", error.message);
+        setError("Gagal memuat informasi kontak.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactInfo();
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,35 +78,70 @@ export default function Contact() {
     setTimeout(() => setSubmitMessage(""), 5000);
   };
 
-  const contactInfo = [
+  if (loading) {
+    return (
+      <section id="contact" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Hubungi Kami
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Memuat informasi kontak...
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="contact" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Hubungi Kami
+            </h2>
+            <p className="text-lg text-red-600 max-w-3xl mx-auto">{error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const contactInfoList = [
     {
       icon: MapPin,
       title: "Alamat",
-      content: "Jl. Warakas V Gg. 2 No.141, RT.05/RW.08",
-      subcontent: "Jakarta Utara, 14370",
+      content: contactInfo?.address_line1,
+      subcontent: contactInfo?.address_line2,
       color: "from-orange-500 to-orange-600",
     },
     {
       icon: Phone,
       title: "Telepon",
-      content: "(+62) 87789164894",
+      content: contactInfo?.phone,
       subcontent: "Senin - Jumat: 07:00 - 15:00 WIB",
       color: "from-blue-500 to-blue-600",
     },
     {
       icon: Mail,
       title: "Email",
-      // ✅ dua email, hanya satu bisa diklik
       content: (
         <>
           <a
-            href="mailto:sdstamanharapan.jakut@gmail.com"
+            href={`mailto:${contactInfo?.email1}`}
             className="text-blue-600 underline hover:text-blue-800"
           >
-            sdstamanharapan_jakut@yahoo.com
+            {contactInfo?.email1}
           </a>
-          <br />
-          <span className="text-gray-600">sdstamanharapan.jakut@gmail.com</span>
+          {contactInfo?.email2 && (
+            <>
+              <br />
+              <span className="text-gray-600">{contactInfo?.email2}</span>
+            </>
+          )}
         </>
       ),
       subcontent: "Kami akan membalas dalam 1x24 jam",
@@ -81,8 +150,8 @@ export default function Contact() {
     {
       icon: Clock,
       title: "Jam Operasional",
-      content: "Senin - Jumat",
-      subcontent: "07:00 - 15:00 WIB",
+      content: contactInfo?.operating_hours,
+      subcontent: contactInfo?.operating_hours_subtext,
       color: "from-orange-500 to-orange-600",
     },
   ];
@@ -101,7 +170,7 @@ export default function Contact() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {contactInfo.map((info, index) => {
+          {contactInfoList.map((info, index) => {
             const Icon = info.icon;
             return (
               <div

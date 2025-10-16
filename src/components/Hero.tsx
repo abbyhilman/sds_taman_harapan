@@ -13,6 +13,7 @@ interface PhotoItem {
   order_position: number;
   created_at: string;
   updated_at: string;
+  title?: string; // Menambahkan title ke interface
 }
 
 export default function Hero({ setActiveSection }: HeroProps) {
@@ -40,7 +41,8 @@ export default function Hero({ setActiveSection }: HeroProps) {
         const { data, error } = await supabase
           .from("welcome_photos")
           .select("*")
-          .order("order_position", { ascending: true })
+          .in("title", ["background", "welcome"]) // Filter berdasarkan title
+          .order("order_position", { ascending: true });
 
         if (error) throw error;
         setPhotos(data || []);
@@ -56,8 +58,10 @@ export default function Hero({ setActiveSection }: HeroProps) {
 
   console.log(photos);
 
-  const backgroundPhoto = photos[0]?.image_url || "https://placehold.co/1920x1080";
-  const heroImage = photos[1]?.image_url || "https://placehold.co/600x600";
+  // Mengambil backgroundPhoto berdasarkan title "background"
+  const backgroundPhoto = photos.find((photo) => photo.title === "background")?.image_url || "https://placehold.co/1920x1080";
+  // Mengambil heroImage berdasarkan title "welcome"
+  const heroImage = photos.find((photo) => photo.title === "welcome")?.image_url || "https://placehold.co/600x600";
 
   if (loading) {
     return (

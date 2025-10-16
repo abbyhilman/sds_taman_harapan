@@ -1,7 +1,24 @@
+import { useState, useEffect } from 'react';
 import { Facebook, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+
+interface ContactInfo {
+  address_line1: string;
+  address_line2: string | null;
+  phone: string;
+  email1: string;
+}
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    address_line1: 'Jl. Warakas V Gg. 2 No.141, RT.05/RW.08',
+    address_line2: 'Jakarta Utara, 14370',
+    phone: '(+62) 87789164894',
+    email1: 'sdstamanharapan_jakut@yahoo.com',
+  });
+  const [loading, setLoading] = useState(true);
 
   const quickLinks = [
     { label: 'Beranda', href: '#home' },
@@ -9,8 +26,29 @@ export default function Footer() {
     { label: 'Program', href: '#programs' },
     { label: 'Fasilitas', href: '#facilities' },
     { label: 'Berita', href: '#news' },
-    { label: 'Kontak', href: '#contact' }
+    { label: 'Kontak', href: '#contact' },
   ];
+
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('contact_info')
+          .select('address_line1, address_line2, phone, email1')
+          .single();
+
+        if (error) throw error;
+        if (data) setContactInfo(data);
+      } catch (error: any) {
+        console.error('Error fetching contact info:', error.message);
+        // Gunakan fallback default jika terjadi error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactInfo();
+  }, []);
 
   const handleClick = (href: string) => {
     const element = document.getElementById(href.replace('#', ''));
@@ -21,7 +59,7 @@ export default function Footer() {
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   };
@@ -104,22 +142,27 @@ export default function Footer() {
               <li className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
                 <span className="text-gray-400 text-sm">
-                  Jl. Warakas V Gg. 2 No.141, RT.05/RW.08, Jakarta Utara, 14370
+                  {contactInfo.address_line1}
+                  {contactInfo.address_line2 && <br />}
+                  {contactInfo.address_line2}
                 </span>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-orange-500 flex-shrink-0" />
-                <a href="tel:02143576611" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  (+62) 87789164894
+                <a
+                  href={`tel:${contactInfo.phone}`}
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  {contactInfo.phone}
                 </a>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-orange-500 flex-shrink-0" />
                 <a
-                  href="mailto:sdstamanharapan_jakut@yahoo.com"
+                  href={`mailto:${contactInfo.email1}`}
                   className="text-gray-400 hover:text-white transition-colors text-sm break-all"
                 >
-                  sdstamanharapan_jakut@yahoo.com
+                  {contactInfo.email1}
                 </a>
               </li>
             </ul>

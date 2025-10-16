@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { supabase } from "./lib/supabase"; // Pastikan supabase sudah diinisialisasi
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import About from "./components/About";
@@ -15,9 +16,41 @@ import Gallery from "./components/Gallery";
 import AllGallery from "./components/AllGallery";
 import AllPrestasi from "./components/AllPrestasi";
 import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
+import PPDB from "./components/PPDB";
+
+interface ContactInfo {
+  phone: string;
+}
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
+  const [phoneNumber, setPhoneNumber] = useState<string>("6287789164894"); // Fallback default
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPhoneNumber = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("contact_info")
+          .select("phone")
+          .single();
+
+        if (error) throw error;
+        if (data?.phone) {
+          // Normalisasi nomor telepon: hapus karakter non-digit dan pastikan format sesuai
+          const normalizedPhone = data.phone.replace(/[^0-9]/g, "");
+          setPhoneNumber(normalizedPhone);
+        }
+      } catch (error: any) {
+        console.error("Error fetching phone number:", error.message);
+        // Gunakan fallback phoneNumber jika terjadi error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhoneNumber();
+  }, []);
 
   return (
     <BrowserRouter>
@@ -35,8 +68,10 @@ const App: React.FC = () => {
                 <About />
                 <Programs />
                 <Facilities />
+              
                 <Prestasi />
                 <Gallery />
+                  <PPDB />
                 <News />
                 <Contact />
               </>
@@ -49,11 +84,13 @@ const App: React.FC = () => {
         </Routes>
 
         <Footer />
-        
-        <FloatingWhatsappButton
-          phoneNumber="6287789164894"
-          message="Halo! Saya ingin menanyakan informasi tentang SDS Taman Harapan."
-        />
+
+        {!loading && (
+          <FloatingWhatsappButton
+            phoneNumber={phoneNumber}
+            message="Halo! Saya ingin menanyakan informasi tentang SDS Taman Harapan."
+          />
+        )}
       </div>
     </BrowserRouter>
   );
