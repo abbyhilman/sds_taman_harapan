@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Users, Flag } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import NewsShimmer from "./NewsShimeer";
 
@@ -75,13 +75,6 @@ const AllNews: React.FC = () => {
           {/* News Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:w-2/3 w-full animate-fade-in">
             {news.map((item) => {
-              const Icon =
-                item.icon === "Users"
-                  ? Users
-                  : item.icon === "Flag"
-                  ? Flag
-                  : Users;
-
               return (
                 <div
                   key={item.id}

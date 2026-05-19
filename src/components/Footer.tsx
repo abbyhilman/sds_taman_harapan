@@ -18,8 +18,6 @@ export default function Footer() {
     phone: '(+62) 87789164894',
     email1: 'sdstamanharapan_jakut@yahoo.com',
   });
-  const [loading, setLoading] = useState(true);
-
   const quickLinks = [
     { label: 'Beranda', href: '#home' },
     { label: 'Tentang Kami', href: '#about' },
@@ -39,11 +37,10 @@ export default function Footer() {
 
         if (error) throw error;
         if (data) setContactInfo(data);
-      } catch (error: any) {
-        console.error('Error fetching contact info:', error.message);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Error fetching contact info:', message);
         // Gunakan fallback default jika terjadi error
-      } finally {
-        setLoading(false);
       }
     };
 

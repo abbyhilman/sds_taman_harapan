@@ -17,10 +17,7 @@ import AllGallery from "./components/AllGallery";
 import AllPrestasi from "./components/AllPrestasi";
 import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
 import PPDB from "./components/PPDB";
-
-interface ContactInfo {
-  phone: string;
-}
+import PublicPPDBPage from "./components/PublicPPDBPage";
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -41,8 +38,9 @@ const App: React.FC = () => {
           const normalizedPhone = data.phone.replace(/[^0-9]/g, "");
           setPhoneNumber(normalizedPhone);
         }
-      } catch (error: any) {
-        console.error("Error fetching phone number:", error.message);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error("Error fetching phone number:", message);
         // Gunakan fallback phoneNumber jika terjadi error
       } finally {
         setLoading(false);
@@ -81,6 +79,7 @@ const App: React.FC = () => {
           <Route path="/all-prestasi" element={<AllPrestasi />} />
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/all-gallery" element={<AllGallery />} />
+          <Route path="/ppdb" element={<PublicPPDBPage />} />
         </Routes>
 
         <Footer />
