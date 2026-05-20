@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { supabase } from "./lib/supabase"; // Pastikan supabase sudah diinisialisasi
 import Header from "./components/Header";
 import Hero from "./components/Hero";
@@ -18,6 +18,16 @@ import AllPrestasi from "./components/AllPrestasi";
 import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
 import PPDB from "./components/PPDB";
 import PublicPPDBPage from "./components/PublicPPDBPage";
+
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -52,6 +62,7 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="min-h-screen bg-white">
         <Header
           activeSection={activeSection}

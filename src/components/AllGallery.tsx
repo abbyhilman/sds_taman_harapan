@@ -211,49 +211,52 @@ const AllGallery: React.FC = () => {
           </div>
         )}
 
-        {selectedItem && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedItem(null)}
-          >
-            <div
-              className="relative max-w-4xl w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              {"image_url" in selectedItem ? (
-                <img
-                  src={selectedItem.image_url}
-                  alt={selectedItem.caption || "Gallery item"}
-                  className="w-full max-h-[80vh] object-contain rounded-lg"
-                />
-              ) : (
-                <video
-                  src={selectedItem.video_url}
-                  className="w-full max-h-[80vh] object-contain rounded-lg"
-                  controls
-                  autoPlay
-                />
-              )}
-              {"caption" in selectedItem && selectedItem.caption && (
-                <p className="text-white text-center mt-4 text-lg">
-                  {selectedItem.caption}
-                </p>
-              )}
-              {"title" in selectedItem && selectedItem.title && (
-                <p className="text-white text-center mt-4 text-lg">
-                  {selectedItem.title}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/85 px-4 py-24 sm:px-6"
+          onClick={() => setSelectedItem(null)}
+        >
+          <div
+            className="relative mx-auto flex max-h-[calc(100vh-7rem)] w-full max-w-5xl flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label="Tutup galeri"
+              onClick={() => setSelectedItem(null)}
+              className="absolute -top-14 right-0 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg backdrop-blur transition hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white"
+            >
+              <X className="h-6 w-6" aria-hidden="true" />
+            </button>
+            {"image_url" in selectedItem ? (
+              <img
+                src={selectedItem.image_url}
+                alt={selectedItem.caption || "Gallery item"}
+                className="max-h-[calc(100vh-13rem)] w-full rounded-lg object-contain shadow-2xl"
+              />
+            ) : (
+              <video
+                src={selectedItem.video_url}
+                className="max-h-[calc(100vh-13rem)] w-full rounded-lg object-contain shadow-2xl"
+                controls
+                autoPlay
+              />
+            )}
+            {"caption" in selectedItem && selectedItem.caption && (
+              <p className="text-white text-center mt-4 text-lg">
+                {selectedItem.caption}
+              </p>
+            )}
+            {"title" in selectedItem && selectedItem.title && (
+              <p className="text-white text-center mt-4 text-lg">
+                {selectedItem.title}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Animasi sederhana */}
       <style>{`
