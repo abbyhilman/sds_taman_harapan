@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import {
   AirVent,
@@ -9,7 +9,7 @@ import {
   Heart,
   Building2,
 } from "lucide-react";
-import NewsShimmer from "./NewsShimeer";
+import { GalleryCardSkeleton } from "../ui/Skeleton";
 
 const iconMap: Record<number, any> = {
   0: AirVent,
@@ -58,7 +58,9 @@ export default function Facilities() {
         </div>
 
         {loading ? (
-          <NewsShimmer />
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => <GalleryCardSkeleton key={i} />)}
+          </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {facilities.map((facility, index) => {
@@ -76,7 +78,7 @@ export default function Facilities() {
                         "https://placehold.co/600x400?text=No+Image"
                       }
                       alt={facility.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy"
                     />
                     <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl">
                       <Icon className="h-6 w-6 text-orange-600" />

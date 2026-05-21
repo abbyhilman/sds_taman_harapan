@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Facebook, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -67,11 +67,14 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
-              <img
-                src="/images/logo_tamhar.png"
-                alt="Logo SDS Taman Harapan"
-                className="h-12 w-12 object-contain"
-              />
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white p-1.5 shadow-lg shadow-black/30 ring-1 ring-white/20">
+                <img
+                  src="/images/logo_tamhar.png"
+                  alt="Logo SDS Taman Harapan"
+                  className="h-full w-full object-contain"
+                  loading="lazy"
+                />
+              </div>
               <div>
                 <h3 className="text-xl font-bold">SDS Taman Harapan</h3>
                 <p className="text-sm text-gray-400">Jakarta Utara</p>
@@ -185,3 +188,4 @@ export default function Footer() {
     </footer>
   );
 }
+

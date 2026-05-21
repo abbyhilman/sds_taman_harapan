@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
-import { Trophy, Star, X } from "lucide-react";
+import { Trophy, Star } from "lucide-react";
+import ImageLightbox from "../ui/ImageLightbox";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
@@ -26,7 +27,7 @@ export default function Prestasi() {
         .select("*")
         .order("year", { ascending: false });
       if (error) {
-        console.error("❌ Error fetching achievements:", error);
+        console.error("âŒ Error fetching achievements:", error);
       } else {
         setAchievements(data || []);
       }
@@ -70,7 +71,7 @@ export default function Prestasi() {
             <p className="text-lg text-white/95 leading-relaxed drop-shadow">
               SDS Taman Harapan terus berkomitmen menumbuhkan semangat kompetisi
               sehat dan membangun karakter unggul melalui prestasi di berbagai
-              bidang — akademik, olahraga, dan seni.
+              bidang â€” akademik, olahraga, dan seni.
             </p>
 
             {/* Daftar Prestasi dari Supabase */}
@@ -108,7 +109,7 @@ export default function Prestasi() {
                 onClick={() => navigate("/all-prestasi")}
                 className="mt-6 inline-flex items-center bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-full shadow-md transition-colors duration-200"
               >
-                Lihat Semua Prestasi →
+                Lihat Semua Prestasi â†’
               </button>
             )}
           </div>
@@ -127,7 +128,7 @@ export default function Prestasi() {
                   "/images/img_prestasi_satu.jpeg"
                 }
                 alt={achievements[0]?.title || "Prestasi Utama"}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover" loading="lazy"
               />
             </div>
 
@@ -142,7 +143,7 @@ export default function Prestasi() {
                   <img
                     src={item.image_url}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover" loading="lazy"
                   />
                 </div>
               ))}
@@ -159,7 +160,7 @@ export default function Prestasi() {
                   <img
                     src={item.image_url}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover" loading="lazy"
                   />
                 </div>
               ))}
@@ -168,27 +169,15 @@ export default function Prestasi() {
         </div>
       </div>
 
-      {/* Popup Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm transition-all"
-          onClick={closeImage}
-        >
-          <div className="relative max-w-4xl w-full mx-4">
-            <button
-              className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors"
-              onClick={closeImage}
-            >
-              <X className="h-8 w-8" />
-            </button>
-            <img
-              src={selectedImage}
-              alt="Preview"
-              className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white/10"
-            />
-          </div>
-        </div>
+      {/* Popup Modal */}      {selectedImage && (
+        <ImageLightbox
+          src={selectedImage}
+          alt="Foto Prestasi"
+          onClose={closeImage}
+        />
       )}
     </section>
   );
 }
+
+

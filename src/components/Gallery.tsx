@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase"; 
-import { X } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Untuk navigasi ke halaman semua gallery
+import { useNavigate } from "react-router-dom";
 import { toast } from "../ui/toas";
-import NewsShimmer from "./NewsShimeer";
-
+import { GalleryCardSkeleton } from "../ui/Skeleton";
+import ImageLightbox from "../ui/ImageLightbox";
+import VideoLightbox from "../ui/VideoLightbox";
 
 interface PhotoItem {
   id: string;
@@ -36,7 +36,7 @@ const Gallery: React.FC = () => {
   );
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>(
     {}
-  ); // State untuk menyimpan thumbnail yang dihasilkan
+  );
   const navigate = useNavigate();
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
@@ -69,7 +69,6 @@ const Gallery: React.FC = () => {
 
       if (error) throw error;
       setVideos(data || []);
-      // Generate thumbnails untuk video setelah data dimuat
       data?.forEach((video) => generateVideoThumbnail(video));
     } catch (error: any) {
       toast({
@@ -82,22 +81,21 @@ const Gallery: React.FC = () => {
     }
   };
 
-  // Fungsi untuk menghasilkan thumbnail dari video_url
   const generateVideoThumbnail = (video: VideoItem) => {
     const videoElement = document.createElement("video");
     videoElement.src = video.video_url;
-    videoElement.crossOrigin = "anonymous"; // Untuk mengatasi CORS jika diperlukan
+    videoElement.crossOrigin = "anonymous";
     videoElement.muted = true;
     videoElement.playsInline = true;
 
     videoElement.onloadeddata = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 320; // Lebar thumbnail
-      canvas.height = 180; // Tinggi thumbnail (aspect ratio 16:9)
+      canvas.width = 320;
+      canvas.height = 180;
       const context = canvas.getContext("2d");
 
       if (context) {
-        videoElement.currentTime = 0.1; // Ambil frame awal (0.1 detik)
+        videoElement.currentTime = 0.1;
         videoElement.onseeked = () => {
           context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
           const thumbnail = canvas.toDataURL("image/jpeg");
@@ -105,17 +103,12 @@ const Gallery: React.FC = () => {
             ...prev,
             [video.id]: thumbnail,
           }));
-          videoElement.remove(); // Bersihkan elemen setelah selesai
+          videoElement.remove();
         };
       }
     };
 
     videoElement.onerror = () => {
-      toast({
-        title: "Error",
-        description: `Gagal memuat thumbnail untuk video ${video.title}`,
-        variant: "destructive",
-      });
       videoElement.remove();
     };
 
@@ -128,7 +121,7 @@ const Gallery: React.FC = () => {
   }, []);
 
   const galleryItems = [...photos, ...videos];
-  const displayedItems = galleryItems.slice(0, 4); // Tampilkan hanya 4 item
+  const displayedItems = galleryItems.slice(0, 4);
 
   return (
     <section className="py-12 bg-gray-50 min-h-screen" id="gallery">
@@ -137,7 +130,14 @@ const Gallery: React.FC = () => {
           Galeri Sekolah
         </h1>
 
-        {loading && <NewsShimmer />}
+        {loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            <GalleryCardSkeleton />
+            <GalleryCardSkeleton />
+            <GalleryCardSkeleton />
+            <GalleryCardSkeleton />
+          </div>
+        )}
 
         {!loading && galleryItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12">
@@ -145,6 +145,7 @@ const Gallery: React.FC = () => {
               src="https://placehold.co/600x400"
               alt="No data available"
               className="w-full max-w-md rounded-lg shadow-md mb-4"
+              loading="lazy"
             />
             <p className="text-gray-600 text-lg">
               Tidak ada foto atau video yang tersedia saat ini.
@@ -166,6 +167,7 @@ const Gallery: React.FC = () => {
                       src={item.image_url}
                       alt={item.caption || "Gallery photo"}
                       className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy" // Mengaktifkan lazy loading gambar untuk meningkatkan PageSpeed LCP score
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
                     {item.caption && (
@@ -185,7 +187,7 @@ const Gallery: React.FC = () => {
                       src={item.video_url}
                       poster={
                         videoThumbnails[item.id] || item.thumbnail_url
-                      } // Gunakan thumbnail yang dihasilkan atau default
+                      }
                       className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                       muted
                       loop
@@ -213,55 +215,28 @@ const Gallery: React.FC = () => {
             )}
           </div>
         )}
-
       </div>
 
-      {selectedItem && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/85 px-4 py-24 sm:px-6"
-          onClick={() => setSelectedItem(null)}
-        >
-          <div
-            className="relative mx-auto flex max-h-[calc(100vh-7rem)] w-full max-w-5xl flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              aria-label="Tutup galeri"
-              onClick={() => setSelectedItem(null)}
-              className="absolute -top-14 right-0 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg backdrop-blur transition hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white"
-            >
-              <X className="h-6 w-6" aria-hidden="true" />
-            </button>
-            {"image_url" in selectedItem ? (
-              <img
-                src={selectedItem.image_url}
-                alt={selectedItem.caption || "Gallery item"}
-                className="max-h-[calc(100vh-13rem)] w-full rounded-lg object-contain shadow-2xl"
-              />
-            ) : (
-              <video
-                src={selectedItem.video_url}
-                className="max-h-[calc(100vh-13rem)] w-full rounded-lg object-contain shadow-2xl"
-                controls
-                autoPlay
-              />
-            )}
-            {"caption" in selectedItem && selectedItem.caption && (
-              <p className="text-white text-center mt-4 text-lg">
-                {selectedItem.caption}
-              </p>
-            )}
-            {"title" in selectedItem && selectedItem.title && (
-              <p className="text-white text-center mt-4 text-lg">
-                {selectedItem.title}
-              </p>
-            )}
-          </div>
-        </div>
+      {selectedItem && "image_url" in selectedItem && (
+        <ImageLightbox
+          src={selectedItem.image_url}
+          alt={selectedItem.caption || "Gallery"}
+          caption={selectedItem.caption}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
+      {selectedItem && "video_url" in selectedItem && (
+        <VideoLightbox
+          src={selectedItem.video_url}
+          title={selectedItem.title || "Video Galeri"}
+          poster={videoThumbnails[selectedItem.id] || selectedItem.thumbnail_url}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
     </section>
   );
 };
 
 export default Gallery;
+
+

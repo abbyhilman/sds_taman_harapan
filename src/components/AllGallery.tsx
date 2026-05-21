@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase"; // Asumsi Anda telah menginisialisasi Supabase client
-import { X } from "lucide-react";
 import { toast } from "../ui/toas";
+import ImageLightbox from "../ui/ImageLightbox";
+import VideoLightbox from "../ui/VideoLightbox";
 import NewsShimmer from "./NewsShimeer";
 
 
@@ -142,7 +143,7 @@ const AllGallery: React.FC = () => {
           Semua Galeri
         </h2>
         <div className="flex items-center mb-8 pl-4">
-          <span className="text-2xl font-semibold text-white mr-2">✨</span>
+          <span className="text-2xl font-semibold text-white mr-2">âœ¨</span>
           <span className="w-16 h-1 bg-orange-500 rounded-full"></span>
         </div>
 
@@ -153,7 +154,7 @@ const AllGallery: React.FC = () => {
             <img
               src="https://placehold.co/600x400"
               alt="No data available"
-              className="w-full max-w-md rounded-lg shadow-md mb-4"
+              className="w-full max-w-md rounded-lg shadow-md mb-4" loading="lazy"
             />
             <p className="text-gray-600 text-lg">
               Tidak ada foto atau video yang tersedia saat ini.
@@ -173,7 +174,7 @@ const AllGallery: React.FC = () => {
                   <img
                     src={item.image_url}
                     alt={item.caption || "Gallery photo"}
-                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
                   {item.caption && (
@@ -213,49 +214,21 @@ const AllGallery: React.FC = () => {
 
       </div>
 
-      {selectedItem && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/85 px-4 py-24 sm:px-6"
-          onClick={() => setSelectedItem(null)}
-        >
-          <div
-            className="relative mx-auto flex max-h-[calc(100vh-7rem)] w-full max-w-5xl flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              aria-label="Tutup galeri"
-              onClick={() => setSelectedItem(null)}
-              className="absolute -top-14 right-0 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg backdrop-blur transition hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white"
-            >
-              <X className="h-6 w-6" aria-hidden="true" />
-            </button>
-            {"image_url" in selectedItem ? (
-              <img
-                src={selectedItem.image_url}
-                alt={selectedItem.caption || "Gallery item"}
-                className="max-h-[calc(100vh-13rem)] w-full rounded-lg object-contain shadow-2xl"
-              />
-            ) : (
-              <video
-                src={selectedItem.video_url}
-                className="max-h-[calc(100vh-13rem)] w-full rounded-lg object-contain shadow-2xl"
-                controls
-                autoPlay
-              />
-            )}
-            {"caption" in selectedItem && selectedItem.caption && (
-              <p className="text-white text-center mt-4 text-lg">
-                {selectedItem.caption}
-              </p>
-            )}
-            {"title" in selectedItem && selectedItem.title && (
-              <p className="text-white text-center mt-4 text-lg">
-                {selectedItem.title}
-              </p>
-            )}
-          </div>
-        </div>
+      {selectedItem && "image_url" in selectedItem && (
+        <ImageLightbox
+          src={selectedItem.image_url}
+          alt={selectedItem.caption || "Galeri"}
+          caption={selectedItem.caption}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
+      {selectedItem && "video_url" in selectedItem && (
+        <VideoLightbox
+          src={selectedItem.video_url}
+          title={selectedItem.title || "Video Galeri"}
+          poster={videoThumbnails[selectedItem.id] || selectedItem.thumbnail_url}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
 
       {/* Animasi sederhana */}
@@ -273,3 +246,5 @@ const AllGallery: React.FC = () => {
 };
 
 export default AllGallery;
+
+
