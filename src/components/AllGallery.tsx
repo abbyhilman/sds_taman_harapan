@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase"; // Asumsi Anda telah menginisialisasi Supabase client
 import { toast } from "../ui/toas";
 import ImageLightbox from "../ui/ImageLightbox";
@@ -36,8 +36,12 @@ const AllGallery: React.FC = () => {
   );
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>(
     {}
-  ); // State untuk menyimpan thumbnail yang dihasilkan
-  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+  );
+
+  // Fungsi untuk mendapatkan thumbnail dari database
+  const getVideoThumbnail = (video: VideoItem) => {
+    return video.thumbnail_url || videoThumbnails[video.id] || undefined;
+  };
 
   const fetchPhotos = async () => {
     try {
@@ -48,7 +52,8 @@ const AllGallery: React.FC = () => {
 
       if (error) throw error;
       setPhotos(data || []);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -68,9 +73,9 @@ const AllGallery: React.FC = () => {
 
       if (error) throw error;
       setVideos(data || []);
-      // Generate thumbnails untuk video setelah data dimuat
       data?.forEach((video) => generateVideoThumbnail(video));
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -190,11 +195,8 @@ const AllGallery: React.FC = () => {
                   onClick={() => setSelectedItem(item)}
                 >
                   <video
-                    ref={(el) => (videoRefs.current[item.id] = el)}
                     src={item.video_url}
-                    poster={
-                      videoThumbnails[item.id] || item.thumbnail_url
-                    } // Gunakan thumbnail yang dihasilkan atau default
+                    poster={getVideoThumbnail(item)}
                     className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                     muted
                     loop
@@ -226,7 +228,7 @@ const AllGallery: React.FC = () => {
         <VideoLightbox
           src={selectedItem.video_url}
           title={selectedItem.title || "Video Galeri"}
-          poster={videoThumbnails[selectedItem.id] || selectedItem.thumbnail_url}
+          poster={getVideoThumbnail(selectedItem)}
           onClose={() => setSelectedItem(null)}
         />
       )}
