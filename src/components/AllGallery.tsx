@@ -143,7 +143,7 @@ const AllGallery: React.FC = () => {
           Semua Galeri
         </h2>
         <div className="flex items-center mb-8 pl-4">
-          <span className="text-2xl font-semibold text-white mr-2">âœ¨</span>
+          <span className="text-2xl font-semibold text-white mr-2">✨</span>
           <span className="w-16 h-1 bg-orange-500 rounded-full"></span>
         </div>
 
