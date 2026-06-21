@@ -20,6 +20,7 @@ declare global {
 const TIKTOK_SCRIPT_SRC = "https://www.tiktok.com/embed.js";
 const INSTAGRAM_SCRIPT_SRC = "https://www.instagram.com/embed.js";
 const TIKTOK_FALLBACK_COVER = "/images/tiktok-school-cover.png";
+const INSTAGRAM_FALLBACK_COVER = "/images/instagram-school-cover.png";
 
 export function getInstagramShortcode(postUrl: string): string | null {
   const match = postUrl.match(/instagram\.com\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/);
@@ -102,7 +103,7 @@ export function getSocialFallbackThumbnail(post: SocialMediaPostLike): string | 
 }
 
 export function getSocialStaticFallbackCover(post: SocialMediaPostLike): string | null {
-  return post.source === "tiktok" ? TIKTOK_FALLBACK_COVER : null;
+  return post.source === "tiktok" ? TIKTOK_FALLBACK_COVER : INSTAGRAM_FALLBACK_COVER;
 }
 
 export async function fetchTiktokThumbnail(postUrl: string): Promise<string | null> {

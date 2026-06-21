@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import {
   Users,
-  GraduationCap,
   BookOpen,
   School,
   ChevronRight,
-  Award,
 } from "lucide-react";
 import NewsShimmer from "./NewsShimeer";
 
@@ -25,6 +23,20 @@ interface Teacher {
   subjects: string[];
   classrooms: string[];
   expertise: string[];
+}
+
+interface TeacherSubjectRelation {
+  teacher_id: string;
+  subjects: { name: string } | { name: string }[] | null;
+}
+
+interface TeacherClassroomRelation {
+  teacher_id: string;
+  classrooms: { name: string } | { name: string }[] | null;
+}
+
+function getRelationName(relation: { name: string } | { name: string }[] | null) {
+  return Array.isArray(relation) ? relation[0]?.name : relation?.name;
 }
 
 const positionLabels: Record<string, string> = {
@@ -78,17 +90,20 @@ export default function Teachers() {
             (teachersData || []).map((t) => t.id)
           );
 
+        const subjectRows = (subjectsData || []) as unknown as TeacherSubjectRelation[];
+        const classroomRows = (classroomsData || []) as unknown as TeacherClassroomRelation[];
+
         const mapped: Teacher[] = (teachersData || []).map((teacher) => ({
           ...teacher,
           subjects:
-            subjectsData
-              ?.filter((s) => s.teacher_id === teacher.id)
-              .map((s) => (s as any).subjects?.name)
+            subjectRows
+              .filter((s) => s.teacher_id === teacher.id)
+              .map((s) => getRelationName(s.subjects))
               .filter(Boolean) || [],
           classrooms:
-            classroomsData
-              ?.filter((c) => c.teacher_id === teacher.id)
-              .map((c) => (c as any).classrooms?.name)
+            classroomRows
+              .filter((c) => c.teacher_id === teacher.id)
+              .map((c) => getRelationName(c.classrooms))
               .filter(Boolean) || [],
           expertise:
             expertiseData
@@ -119,10 +134,6 @@ export default function Teachers() {
     if (position.includes("Kepala")) return "/images/guru-laki.png";
     return "/images/guru-wanita.png";
   };
-
-  const uniqueSubjects = Array.from(
-    new Set(teachers.flatMap((t) => t.subjects))
-  ).length;
 
   return (
     <section id="teachers" className="py-20 bg-gray-50">
@@ -229,25 +240,6 @@ export default function Teachers() {
               </div>
             )}
 
-            {/* Stats Section */}
-            <div className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-xl p-6 text-center shadow-md">
-                <div className="text-3xl font-bold text-cyan-600">
-                  {teachers.length}
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Total Pengajar</div>
-              </div>
-              <div className="bg-white rounded-xl p-6 text-center shadow-md">
-                <div className="text-3xl font-bold text-orange-600">
-                  {uniqueSubjects}
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Mata Pelajaran</div>
-              </div>
-              <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 text-center shadow-md">
-                <div className="text-3xl font-bold text-blue-600">100%</div>
-                <div className="text-sm text-gray-600 mt-1">Bersertifikat</div>
-              </div>
-            </div>
           </>
         )}
 

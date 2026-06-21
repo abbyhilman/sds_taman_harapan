@@ -77,10 +77,12 @@ export default function SocialMedia() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => {
+            const originalThumbnail =
+              getSocialFallbackThumbnail(post) || socialThumbnails[post.id];
+            const fallbackCover = getSocialStaticFallbackCover(post);
             const thumbnailSrc =
-              getSocialFallbackThumbnail(post) ||
-              socialThumbnails[post.id] ||
-              getSocialStaticFallbackCover(post);
+              originalThumbnail ||
+              fallbackCover;
             
             return (
               <div
@@ -95,13 +97,17 @@ export default function SocialMedia() {
                       alt={post.caption || "Social media post"}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
+                        if (fallbackCover && e.currentTarget.src !== new URL(fallbackCover, window.location.origin).href) {
+                          e.currentTarget.src = fallbackCover;
+                          return;
+                        }
+                        e.currentTarget.style.display = "none";
                         const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.classList.remove('hidden');
+                        if (fallback) fallback.classList.remove("hidden");
                       }}
                     />
                   ) : null}
-                  <div className={`${thumbnailSrc ? 'hidden' : ''} absolute inset-0 flex items-center justify-center`}>
+                  <div className={`${thumbnailSrc ? "hidden" : ""} absolute inset-0 flex items-center justify-center`}>
                     {post.source === "instagram" ? (
                       <Instagram className="h-20 w-20 text-pink-300 group-hover:text-pink-400 transition-colors" />
                     ) : (

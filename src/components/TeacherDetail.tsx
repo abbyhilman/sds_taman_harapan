@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import {
-  ArrowLeft,
   GraduationCap,
   BookOpen,
   School,
@@ -26,6 +25,20 @@ interface Teacher {
   subjects: string[];
   classrooms: string[];
   expertise: string[];
+}
+
+interface TeacherSubjectRelation {
+  teacher_id: string;
+  subjects: { name: string } | { name: string }[] | null;
+}
+
+interface TeacherClassroomRelation {
+  teacher_id: string;
+  classrooms: { name: string } | { name: string }[] | null;
+}
+
+function getRelationName(relation: { name: string } | { name: string }[] | null) {
+  return Array.isArray(relation) ? relation[0]?.name : relation?.name;
 }
 
 const positionLabels: Record<string, string> = {
@@ -76,15 +89,18 @@ export default function TeacherDetail() {
           .select("teacher_id, expertise")
           .eq("teacher_id", teacherData.id);
 
+        const subjectRows = (subjectsData || []) as unknown as TeacherSubjectRelation[];
+        const classroomRows = (classroomsData || []) as unknown as TeacherClassroomRelation[];
+
         const mapped: Teacher = {
           ...teacherData,
           subjects:
-            subjectsData
-              ?.map((s) => (s as any).subjects?.name)
+            subjectRows
+              .map((s) => getRelationName(s.subjects))
               .filter(Boolean) || [],
           classrooms:
-            classroomsData
-              ?.map((c) => (c as any).classrooms?.name)
+            classroomRows
+              .map((c) => getRelationName(c.classrooms))
               .filter(Boolean) || [],
           expertise: expertiseData?.map((e) => e.expertise) || [],
         };
@@ -119,16 +135,7 @@ export default function TeacherDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors mb-8"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span className="font-medium">Kembali</span>
-        </button>
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-8">
           <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-8 sm:p-12">
@@ -154,9 +161,9 @@ export default function TeacherDetail() {
         </div>
 
         {/* Main Content */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-8">
           {/* Left Column - Info */}
-          <div className="md:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Bio */}
             {teacher.bio && (
               <div className="bg-white rounded-2xl p-6 shadow-md">
@@ -169,7 +176,7 @@ export default function TeacherDetail() {
             )}
 
             {/* Pendidikan & Asal Sekolah */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               {teacher.education && (
                 <div className="bg-white rounded-2xl p-6 shadow-md">
                   <div className="flex items-center gap-2 text-cyan-600 mb-2">
