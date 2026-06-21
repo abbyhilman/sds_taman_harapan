@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import ImageLightbox from "../ui/ImageLightbox";
 import { supabase } from "../lib/supabase";
 
 export default function Programs() {
@@ -144,7 +144,7 @@ export default function Programs() {
                         <img
                           src={img.image_url}
                           alt={`Kegiatan ${i + 1}`}
-                          className="w-full h-48 object-cover group-hover:opacity-90"
+                          className="w-full h-48 object-cover group-hover:opacity-90" loading="lazy"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
                       </div>
@@ -156,30 +156,8 @@ export default function Programs() {
         )}
       </div>
 
-      {/* Modal Gambar */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div
-            className="relative max-w-4xl w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-3 right-3 bg-white/90 p-2 rounded-full shadow hover:bg-white transition"
-            >
-              <X className="h-5 w-5 text-gray-800" />
-            </button>
-            <img
-              src={selectedImage}
-              alt="Preview"
-              className="w-full h-auto rounded-xl shadow-2xl"
-            />
-          </div>
-        </div>
-      )}
+      {selectedImage && (<ImageLightbox src={selectedImage} alt="Foto Program" onClose={() => setSelectedImage(null)} />)}
     </section>
   );
 }
+

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase"; // Asumsi Anda telah menginisialisasi Supabase client
-import { X } from "lucide-react";
 import { toast } from "../ui/toas";
+import ImageLightbox from "../ui/ImageLightbox";
+import VideoLightbox from "../ui/VideoLightbox";
 import NewsShimmer from "./NewsShimeer";
 
 
@@ -35,8 +36,12 @@ const AllGallery: React.FC = () => {
   );
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>(
     {}
-  ); // State untuk menyimpan thumbnail yang dihasilkan
-  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+  );
+
+  // Fungsi untuk mendapatkan thumbnail dari database
+  const getVideoThumbnail = (video: VideoItem) => {
+    return video.thumbnail_url || videoThumbnails[video.id] || undefined;
+  };
 
   const fetchPhotos = async () => {
     try {
@@ -47,7 +52,8 @@ const AllGallery: React.FC = () => {
 
       if (error) throw error;
       setPhotos(data || []);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -67,9 +73,9 @@ const AllGallery: React.FC = () => {
 
       if (error) throw error;
       setVideos(data || []);
-      // Generate thumbnails untuk video setelah data dimuat
       data?.forEach((video) => generateVideoThumbnail(video));
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -153,7 +159,7 @@ const AllGallery: React.FC = () => {
             <img
               src="https://placehold.co/600x400"
               alt="No data available"
-              className="w-full max-w-md rounded-lg shadow-md mb-4"
+              className="w-full max-w-md rounded-lg shadow-md mb-4" loading="lazy"
             />
             <p className="text-gray-600 text-lg">
               Tidak ada foto atau video yang tersedia saat ini.
@@ -173,7 +179,7 @@ const AllGallery: React.FC = () => {
                   <img
                     src={item.image_url}
                     alt={item.caption || "Gallery photo"}
-                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
                   {item.caption && (
@@ -189,11 +195,8 @@ const AllGallery: React.FC = () => {
                   onClick={() => setSelectedItem(item)}
                 >
                   <video
-                    ref={(el) => (videoRefs.current[item.id] = el)}
                     src={item.video_url}
-                    poster={
-                      videoThumbnails[item.id] || item.thumbnail_url
-                    } // Gunakan thumbnail yang dihasilkan atau default
+                    poster={getVideoThumbnail(item)}
                     className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                     muted
                     loop
@@ -211,49 +214,24 @@ const AllGallery: React.FC = () => {
           </div>
         )}
 
-        {selectedItem && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedItem(null)}
-          >
-            <div
-              className="relative max-w-4xl w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              {"image_url" in selectedItem ? (
-                <img
-                  src={selectedItem.image_url}
-                  alt={selectedItem.caption || "Gallery item"}
-                  className="w-full max-h-[80vh] object-contain rounded-lg"
-                />
-              ) : (
-                <video
-                  src={selectedItem.video_url}
-                  className="w-full max-h-[80vh] object-contain rounded-lg"
-                  controls
-                  autoPlay
-                />
-              )}
-              {"caption" in selectedItem && selectedItem.caption && (
-                <p className="text-white text-center mt-4 text-lg">
-                  {selectedItem.caption}
-                </p>
-              )}
-              {"title" in selectedItem && selectedItem.title && (
-                <p className="text-white text-center mt-4 text-lg">
-                  {selectedItem.title}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {selectedItem && "image_url" in selectedItem && (
+        <ImageLightbox
+          src={selectedItem.image_url}
+          alt={selectedItem.caption || "Galeri"}
+          caption={selectedItem.caption}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
+      {selectedItem && "video_url" in selectedItem && (
+        <VideoLightbox
+          src={selectedItem.video_url}
+          title={selectedItem.title || "Video Galeri"}
+          poster={getVideoThumbnail(selectedItem)}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
 
       {/* Animasi sederhana */}
       <style>{`
@@ -270,3 +248,5 @@ const AllGallery: React.FC = () => {
 };
 
 export default AllGallery;
+
+

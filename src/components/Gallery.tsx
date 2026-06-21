@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { supabase } from "../lib/supabase"; 
-import { X } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Untuk navigasi ke halaman semua gallery
+import { supabase } from "../lib/supabase";
+import { useNavigate } from "react-router-dom";
 import { toast } from "../ui/toas";
-import NewsShimmer from "./NewsShimeer";
-
+import { GalleryCardSkeleton } from "../ui/Skeleton";
+import ImageLightbox from "../ui/ImageLightbox";
+import VideoLightbox from "../ui/VideoLightbox";
+import { motion, useInView } from "framer-motion";
 
 interface PhotoItem {
   id: string;
@@ -31,14 +32,15 @@ const Gallery: React.FC = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<PhotoItem | VideoItem | null>(
-    null
-  );
-  const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>(
-    {}
-  ); // State untuk menyimpan thumbnail yang dihasilkan
+  const [selectedItem, setSelectedItem] = useState<PhotoItem | VideoItem | null>(null);
+  const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const navigate = useNavigate();
-  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+
+  // Ref untuk video MPLS autoplay
+  const mplsVideoRef = useRef<HTMLVideoElement>(null);
+  const mplsContainerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(mplsContainerRef, { amount: 0.5 });
 
   const fetchPhotos = async () => {
     try {
@@ -49,7 +51,8 @@ const Gallery: React.FC = () => {
 
       if (error) throw error;
       setPhotos(data || []);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -69,9 +72,9 @@ const Gallery: React.FC = () => {
 
       if (error) throw error;
       setVideos(data || []);
-      // Generate thumbnails untuk video setelah data dimuat
       data?.forEach((video) => generateVideoThumbnail(video));
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -82,22 +85,21 @@ const Gallery: React.FC = () => {
     }
   };
 
-  // Fungsi untuk menghasilkan thumbnail dari video_url
   const generateVideoThumbnail = (video: VideoItem) => {
     const videoElement = document.createElement("video");
     videoElement.src = video.video_url;
-    videoElement.crossOrigin = "anonymous"; // Untuk mengatasi CORS jika diperlukan
+    videoElement.crossOrigin = "anonymous";
     videoElement.muted = true;
     videoElement.playsInline = true;
 
     videoElement.onloadeddata = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 320; // Lebar thumbnail
-      canvas.height = 180; // Tinggi thumbnail (aspect ratio 16:9)
+      canvas.width = 320;
+      canvas.height = 180;
       const context = canvas.getContext("2d");
 
       if (context) {
-        videoElement.currentTime = 0.1; // Ambil frame awal (0.1 detik)
+        videoElement.currentTime = 0.1;
         videoElement.onseeked = () => {
           context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
           const thumbnail = canvas.toDataURL("image/jpeg");
@@ -105,17 +107,12 @@ const Gallery: React.FC = () => {
             ...prev,
             [video.id]: thumbnail,
           }));
-          videoElement.remove(); // Bersihkan elemen setelah selesai
+          videoElement.remove();
         };
       }
     };
 
     videoElement.onerror = () => {
-      toast({
-        title: "Error",
-        description: `Gagal memuat thumbnail untuk video ${video.title}`,
-        variant: "destructive",
-      });
       videoElement.remove();
     };
 
@@ -127,24 +124,71 @@ const Gallery: React.FC = () => {
     fetchVideos();
   }, []);
 
-  const galleryItems = [...photos, ...videos];
-  const displayedItems = galleryItems.slice(0, 4); // Tampilkan hanya 4 item
+  // Autoplay video MPLS saat masuk viewport
+  useEffect(() => {
+    if (mplsVideoRef.current) {
+      if (isInView) {
+        mplsVideoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+      } else {
+        mplsVideoRef.current.pause();
+        setIsVideoPlaying(false);
+      }
+    }
+  }, [isInView]);
+
+  // Cari video MPLS berdasarkan title yang mengandung "MPLS"
+  const mplsVideo = videos.find((v) => v.title?.toLowerCase().includes("mpls")) || videos[0];
+  
+  // Fungsi untuk mendapatkan thumbnail dari database
+  const getVideoThumbnail = (video: VideoItem | undefined) => {
+    if (!video) return undefined;
+    return video.thumbnail_url || videoThumbnails[video.id] || undefined;
+  };
+  
+  const displayedPhotos = photos.slice(0, 4);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
 
   return (
     <section className="py-12 bg-gray-50 min-h-screen" id="gallery">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-3xl font-bold text-gray-900 mb-8 text-center"
+        >
           Galeri Sekolah
-        </h1>
+        </motion.h1>
 
-        {loading && <NewsShimmer />}
+        {loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            <GalleryCardSkeleton />
+            <GalleryCardSkeleton />
+            <GalleryCardSkeleton />
+            <GalleryCardSkeleton />
+          </div>
+        )}
 
-        {!loading && galleryItems.length === 0 && (
+        {!loading && photos.length === 0 && videos.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12">
             <img
               src="https://placehold.co/600x400"
               alt="No data available"
               className="w-full max-w-md rounded-lg shadow-md mb-4"
+              loading="lazy"
             />
             <p className="text-gray-600 text-lg">
               Tidak ada foto atau video yang tersedia saat ini.
@@ -152,111 +196,125 @@ const Gallery: React.FC = () => {
           </div>
         )}
 
-        {!loading && galleryItems.length > 0 && (
-          <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
-              {displayedItems.map((item) =>
-                "image_url" in item ? (
-                  <div
-                    key={item.id}
+        {!loading && (photos.length > 0 || videos.length > 0) && (
+          <div className="space-y-8">
+            {/* Video MPLS Full Card */}
+            {mplsVideo && (
+              <motion.div
+                ref={mplsContainerRef}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                className="relative w-full rounded-2xl overflow-hidden shadow-xl cursor-pointer group"
+                onClick={() => setSelectedItem(mplsVideo)}
+              >
+                <video
+                  ref={mplsVideoRef}
+                  src={mplsVideo.video_url}
+                  poster={getVideoThumbnail(mplsVideo)}
+                  className="w-full h-[300px] sm:h-[400px] md:h-[500px] object-cover"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  onPlay={() => setIsVideoPlaying(true)}
+                  onPause={() => setIsVideoPlaying(false)}
+                  onEnded={() => setIsVideoPlaying(false)}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <span className="inline-block px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full mb-2">
+                    Video MPLS
+                  </span>
+                  {mplsVideo.title && (
+                    <h3 className="text-white text-xl md:text-2xl font-bold">
+                      {mplsVideo.title}
+                    </h3>
+                  )}
+                </div>
+                {/* Play icon - hanya muncul saat video tidak playing */}
+                {!isVideoPlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-orange-500 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Foto Gallery Grid dengan Animasi */}
+            {displayedPhotos.length > 0 && (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4"
+              >
+                {displayedPhotos.map((photo) => (
+                  <motion.div
+                    key={photo.id}
+                    variants={itemVariants}
                     className="relative group overflow-hidden rounded-lg shadow-md cursor-pointer"
-                    onClick={() => setSelectedItem(item)}
+                    onClick={() => setSelectedItem(photo)}
                   >
                     <img
-                      src={item.image_url}
-                      alt={item.caption || "Gallery photo"}
+                      src={photo.image_url}
+                      alt={photo.caption || "Gallery photo"}
                       className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
-                    {item.caption && (
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300" />
+                    {photo.caption && (
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
-                        {item.caption}
+                        {photo.caption}
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <div
-                    key={item.id}
-                    className="relative group overflow-hidden rounded-lg shadow-md cursor-pointer"
-                    onClick={() => setSelectedItem(item)}
-                  >
-                    <video
-                      ref={(el) => (videoRefs.current[item.id] = el)}
-                      src={item.video_url}
-                      poster={
-                        videoThumbnails[item.id] || item.thumbnail_url
-                      } // Gunakan thumbnail yang dihasilkan atau default
-                      className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                      muted
-                      loop
-                      playsInline
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
-                    {item.title && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
-                        {item.title}
-                      </div>
-                    )}
-                  </div>
-                )
-              )}
-            </div>
-            {galleryItems.length > 4 && (
-              <div className="mt-6 text-center">
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+
+            {(photos.length > 4 || videos.length > 1) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="mt-6 text-center"
+              >
                 <button
                   onClick={() => navigate("/all-gallery")}
                   className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300"
                 >
                   Lihat Semua Gallery
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         )}
-
-        {selectedItem && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedItem(null)}
-          >
-            <div
-              className="relative max-w-4xl w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              {"image_url" in selectedItem ? (
-                <img
-                  src={selectedItem.image_url}
-                  alt={selectedItem.caption || "Gallery item"}
-                  className="w-full max-h-[80vh] object-contain rounded-lg"
-                />
-              ) : (
-                <video
-                  src={selectedItem.video_url}
-                  className="w-full max-h-[80vh] object-contain rounded-lg"
-                  controls
-                  autoPlay
-                />
-              )}
-              {"caption" in selectedItem && selectedItem.caption && (
-                <p className="text-white text-center mt-4 text-lg">
-                  {selectedItem.caption}
-                </p>
-              )}
-              {"title" in selectedItem && selectedItem.title && (
-                <p className="text-white text-center mt-4 text-lg">
-                  {selectedItem.title}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {selectedItem && "image_url" in selectedItem && (
+        <ImageLightbox
+          src={selectedItem.image_url}
+          alt={selectedItem.caption || "Gallery"}
+          caption={selectedItem.caption}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
+      {selectedItem && "video_url" in selectedItem && (
+        <VideoLightbox
+          src={selectedItem.video_url}
+          title={selectedItem.title || "Video Galeri"}
+          poster={getVideoThumbnail(selectedItem)}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </section>
   );
 };

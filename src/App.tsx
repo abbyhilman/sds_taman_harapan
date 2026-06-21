@@ -1,25 +1,40 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { supabase } from "./lib/supabase"; // Pastikan supabase sudah diinisialisasi
+import React, { useState, useEffect, Suspense } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { supabase } from "./lib/supabase";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
-import About from "./components/About";
-import Programs from "./components/Programs";
-import Facilities from "./components/Facilities";
-import News from "./components/News";
-import Contact from "./components/Contact";
 import Footer from "./components/Footer";
-import Prestasi from "./components/Prestasi";
-import AllNews from "./components/AllNews";
-import NewsDetail from "./components/NewsDetail";
-import Gallery from "./components/Gallery";
-import AllGallery from "./components/AllGallery";
-import AllPrestasi from "./components/AllPrestasi";
 import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
 import PPDB from "./components/PPDB";
 import PublicPPDBPage from "./components/PublicPPDBPage";
 import Teachers from "./components/Teachers";
 import SocialMedia from "./components/SocialMedia";
+import AppLoadingScreen from "./ui/AppLoadingScreen";
+import ScrollAnimate from "./ui/ScrollAnimate";
+
+// Lazy loading components untuk performa loading awal super cepat (Code Splitting)
+const About = React.lazy(() => import("./components/About"));
+const Programs = React.lazy(() => import("./components/Programs"));
+const Facilities = React.lazy(() => import("./components/Facilities"));
+const Prestasi = React.lazy(() => import("./components/Prestasi"));
+const Gallery = React.lazy(() => import("./components/Gallery"));
+const News = React.lazy(() => import("./components/News"));
+const Contact = React.lazy(() => import("./components/Contact"));
+
+const AllNews = React.lazy(() => import("./components/AllNews"));
+const AllPrestasi = React.lazy(() => import("./components/AllPrestasi"));
+const NewsDetail = React.lazy(() => import("./components/NewsDetail"));
+const AllGallery = React.lazy(() => import("./components/AllGallery"));
+
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -36,14 +51,12 @@ const App: React.FC = () => {
 
         if (error) throw error;
         if (data?.phone) {
-          // Normalisasi nomor telepon: hapus karakter non-digit dan pastikan format sesuai
           const normalizedPhone = data.phone.replace(/[^0-9]/g, "");
           setPhoneNumber(normalizedPhone);
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         console.error("Error fetching phone number:", message);
-        // Gunakan fallback phoneNumber jika terjadi error
       } finally {
         setLoading(false);
       }
@@ -52,38 +65,77 @@ const App: React.FC = () => {
     fetchPhoneNumber();
   }, []);
 
+  if (loading) {
+    return <AppLoadingScreen label="Menyiapkan halaman SDS Taman Harapan..." />;
+  }
+
   return (
-    <BrowserRouter>
+    <>
+      <ScrollToTop />
       <div className="min-h-screen bg-white">
         <Header
           activeSection={activeSection}
           setActiveSection={setActiveSection}
         />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Hero setActiveSection={setActiveSection} />
-                <About />
-                <Programs />
-                <Facilities />
-                <Teachers />
-                <Prestasi />
-                <Gallery />
-                  <PPDB />
-                <News />
-                <SocialMedia />
-                <Contact />
-              </>
-            }
-          />
-          <Route path="/all-news" element={<AllNews />} />
-          <Route path="/all-prestasi" element={<AllPrestasi />} />
-          <Route path="/news/:id" element={<NewsDetail />} />
-          <Route path="/all-gallery" element={<AllGallery />} />
-          <Route path="/ppdb" element={<PublicPPDBPage />} />
-        </Routes>
+
+        {/* Menggunakan Suspense dengan AppLoadingScreen sebagai fallback */}
+        <Suspense fallback={<AppLoadingScreen label="Memuat konten..." />}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <Hero setActiveSection={setActiveSection} />
+
+                  <ScrollAnimate variant="fade-up" delay={0}>
+                    <About />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={50}>
+                    <Programs />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={0}>
+                    <Facilities />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={50}>
+                    <Teachers />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={0}>
+                    <Prestasi />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={50}>
+                    <Gallery />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={0}>
+                    <PPDB />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={50}>
+                    <News />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={0}>
+                    <SocialMedia />
+                  </ScrollAnimate>
+
+                  <ScrollAnimate variant="fade-up" delay={50}>
+                    <Contact />
+                  </ScrollAnimate>
+                </>
+              }
+            />
+            <Route path="/all-news" element={<AllNews />} />
+            <Route path="/all-prestasi" element={<AllPrestasi />} />
+            <Route path="/news/:id" element={<NewsDetail />} />
+            <Route path="/all-gallery" element={<AllGallery />} />
+            <Route path="/ppdb" element={<PublicPPDBPage />} />
+          </Routes>
+        </Suspense>
 
         <Footer />
 
@@ -94,7 +146,7 @@ const App: React.FC = () => {
           />
         )}
       </div>
-    </BrowserRouter>
+    </>
   );
 };
 

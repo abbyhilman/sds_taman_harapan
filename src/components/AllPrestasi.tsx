@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
+import ImageLightbox from "../ui/ImageLightbox";
 import { supabase } from "../lib/supabase";
 
 interface Achievement {
@@ -14,6 +15,7 @@ interface Achievement {
 export default function AllPrestasi() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<Achievement | null>(null);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -72,13 +74,14 @@ export default function AllPrestasi() {
             {achievements.map((item) => (
               <div
                 key={item.id}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 shadow-xl hover:scale-[1.02] transition-transform"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 shadow-xl hover:scale-[1.02] transition-transform cursor-pointer"
+                onClick={() => setSelectedImage(item)}
               >
                 <div className="aspect-video overflow-hidden">
                   <img
                     src={item.image_url}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover" loading="lazy"
                   />
                 </div>
                 <div className="p-5 text-white">
@@ -93,6 +96,15 @@ export default function AllPrestasi() {
           </div>
         )}
       </div>
+          {selectedImage && (
+        <ImageLightbox
+          src={selectedImage.image_url}
+          alt={selectedImage.title}
+          caption={`${selectedImage.title} (${selectedImage.year})`}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </section>
   );
 }
+

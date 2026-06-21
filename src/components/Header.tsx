@@ -11,14 +11,12 @@ interface HeaderProps {
 interface DropdownItem {
   id: string;
   label: string;
-  href?: string;
 }
 
 interface MenuItem {
   id: string;
   label: string;
   dropdown?: DropdownItem[];
-  cta?: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -50,7 +48,6 @@ export default function Header({
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const isHeaderSolid = isScrolled || location.pathname !== "/";
 
-  // 🔹 Efek saat scroll (ubah background)
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -59,7 +56,6 @@ export default function Header({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 🔹 Gunakan Intersection Observer untuk deteksi section aktif
   useEffect(() => {
     const sections = menuItems.flatMap((item) =>
       item.dropdown
@@ -89,7 +85,6 @@ export default function Header({
     return () => observer.disconnect();
   }, [setActiveSection]);
 
-  // 🔹 Scroll halus ke section
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -119,34 +114,37 @@ export default function Header({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isHeaderSolid ? "bg-white/90 shadow-md backdrop-blur-sm" : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
+        isHeaderSolid
+          ? "bg-white/95 shadow-md backdrop-blur-md border-b border-slate-100 py-1"
+          : "bg-transparent py-3"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Baris utama */}
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
+          {/* Logo dengan transisi teks & ikon */}
           <div
-            className="flex items-center space-x-3 cursor-pointer"
+            className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => goToSection("home")}
           >
-            <img
-              src="/images/logo_tamhar.png"
-              alt="Logo SDS Taman Harapan"
-              className="h-14 w-14 object-contain"
-            />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/70 bg-white p-1.5 shadow-lg shadow-black/10 transition-transform duration-300 group-hover:scale-105">
+              <img
+                src="/images/logo_tamhar.png"
+                alt="Logo SDS Taman Harapan"
+                className="h-full w-full object-contain"
+              />
+            </div>
             <div>
               <h1
-                className={`text-xl font-bold transition-colors duration-300 ${
-                  isHeaderSolid ? "text-gray-900" : "text-white"
+                className={`text-xl font-extrabold tracking-tight transition-colors duration-500 ${
+                  isHeaderSolid ? "text-gray-900" : "text-white drop-shadow-sm"
                 }`}
               >
                 SDS Taman Harapan
               </h1>
               <p
-                className={`text-xs transition-colors duration-300 ${
-                  isHeaderSolid ? "text-gray-700" : "text-gray-200"
+                className={`text-xs font-medium transition-colors duration-500 ${
+                  isHeaderSolid ? "text-gray-600" : "text-gray-300 drop-shadow-sm"
                 }`}
               >
                 Jakarta Utara
@@ -165,12 +163,12 @@ export default function Header({
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
                   <button
-                    className={`flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      activeSection === item.id || item.dropdown.some(d => d.id === activeSection)
-                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                    className={`flex items-center gap-1 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                      activeSection === item.id || item.dropdown.some((d) => d.id === activeSection)
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/10 hover:shadow-lg hover:shadow-orange-500/20 scale-[1.03]"
                         : isHeaderSolid
-                        ? "text-gray-800 hover:bg-orange-50 hover:text-orange-600"
-                        : "text-white hover:bg-white/20 hover:text-orange-300"
+                        ? "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                        : "text-white/90 hover:bg-white/10 hover:text-white"
                     }`}
                   >
                     {item.label}
@@ -190,24 +188,16 @@ export default function Header({
                     </div>
                   )}
                 </div>
-              ) : item.cta ? (
-                <button
-                  key={item.id}
-                  onClick={() => goToSection(item.id)}
-                  className="ml-2 px-6 py-2.5 rounded-full text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                >
-                  {item.label}
-                </button>
               ) : (
                 <button
                   key={item.id}
                   onClick={() => goToSection(item.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                     activeSection === item.id
-                      ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                      ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/10 hover:shadow-lg hover:shadow-orange-500/20 scale-[1.03]"
                       : isHeaderSolid
-                      ? "text-gray-800 hover:bg-orange-50 hover:text-orange-600"
-                      : "text-white hover:bg-white/20 hover:text-orange-300"
+                      ? "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                      : "text-white/90 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {item.label}
@@ -225,17 +215,17 @@ export default function Header({
 
           {/* Tombol Menu Mobile */}
           <button
-            className={`md:hidden p-2 rounded-lg transition-colors ${
+            className={`md:hidden p-2.5 rounded-xl transition-all duration-300 border ${
               isHeaderSolid
-                ? "text-gray-800 hover:bg-gray-100"
-                : "text-white hover:bg-white/20"
+                ? "text-gray-800 border-slate-100 hover:bg-gray-50"
+                : "text-white border-white/10 hover:bg-white/10"
             }`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             )}
           </button>
         </div>
@@ -243,68 +233,67 @@ export default function Header({
         {/* Menu Mobile */}
         {isMenuOpen && (
           <nav
-            className={`md:hidden py-4 space-y-2 transition-all ${
-              isHeaderSolid ? "bg-white/90 backdrop-blur-sm" : "bg-black/70"
+            className={`md:hidden py-4 px-2 space-y-1.5 rounded-2xl mt-2 border shadow-xl transition-all duration-300 ${
+              isHeaderSolid
+                ? "bg-white border-slate-100"
+                : "bg-slate-950/95 backdrop-blur-lg border-white/10"
             }`}
           >
-            {menuItems.map((item) => (
-              <div key={item.id}>
-                {item.dropdown ? (
-                  <>
-                    <button
-                      onClick={() =>
-                        setOpenDropdown(
-                          openDropdown === item.id ? null : item.id
-                        )
-                      }
-                      className={`flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                        activeSection === item.id || item.dropdown.some(d => d.id === activeSection)
-                          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                          : isHeaderSolid
-                          ? "text-gray-800 hover:bg-orange-50"
-                          : "text-white hover:bg-white/10"
-                      }`}
-                    >
-                      {item.label}
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${
-                          openDropdown === item.id ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-                    {openDropdown === item.id && (
-                      <div className="ml-4 mt-1 space-y-1">
-                        {item.dropdown.map((sub) => (
-                          <button
-                            key={sub.id + sub.label}
-                            onClick={() => goToSection(sub.id)}
-                            className="w-full text-left px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-                          >
-                            {sub.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
+            {menuItems.map((item) =>
+              item.dropdown ? (
+                <div key={item.id}>
                   <button
-                    onClick={() => goToSection(item.id)}
-                    className={`block w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === item.id
-                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === item.id ? null : item.id)
+                    }
+                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                      activeSection === item.id || item.dropdown.some((d) => d.id === activeSection)
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md"
                         : isHeaderSolid
-                        ? "text-gray-800 hover:bg-orange-50"
-                        : "text-white hover:bg-white/10"
+                        ? "text-gray-700 hover:bg-orange-50/50 hover:text-orange-600"
+                        : "text-slate-300 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     {item.label}
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        openDropdown === item.id ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                )}
-              </div>
-            ))}
+                  {openDropdown === item.id && (
+                    <div className="ml-2 mt-1 space-y-1">
+                      {item.dropdown.map((sub) => (
+                        <button
+                          key={sub.id + sub.label}
+                          onClick={() => goToSection(sub.id)}
+                          className="w-full text-left px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                        >
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => goToSection(item.id)}
+                  className={`block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    activeSection === item.id
+                      ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md"
+                      : isHeaderSolid
+                      ? "text-gray-700 hover:bg-orange-50/50 hover:text-orange-600"
+                      : "text-slate-300 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              )
+            )}
             <a
               href="/ppdb"
-              className="block w-full text-center px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white"
+              className="block w-full text-center px-4 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
             >
               Pendaftaran
             </a>
