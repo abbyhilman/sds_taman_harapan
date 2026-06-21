@@ -392,8 +392,6 @@ export default function Teachers() {
                 </div>
               </div>
             )}
-          </div>
-        )}
       </div>
     </section>
   );
