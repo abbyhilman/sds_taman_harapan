@@ -343,8 +343,9 @@ const Gallery: React.FC = () => {
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4"
               >
                 {socialPosts.map((post) => {
-                  const instagramThumb = post.post_url.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/) 
-                    ? `https://www.instagram.com/p/${post.post_url.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/)[2]}/media/?size=l`
+                  const urlMatch = post.post_url.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/);
+                  const instagramThumb = urlMatch 
+                    ? `https://www.instagram.com/p/${urlMatch[2]}/media/?size=l`
                     : null;
 
                   return (
@@ -440,12 +441,17 @@ const Gallery: React.FC = () => {
       {selectedSocialPost && (
         <SocialMediaLightbox
           source={selectedSocialPost.source}
-          embedHtml={
-            selectedSocialPost.embed_code ||
-            (selectedSocialPost.source === "tiktok"
-              ? `<blockquote class="tiktok-embed" cite="${selectedSocialPost.post_url}" data-video-id="${selectedSocialPost.post_url.match(/\/(video|photo)\/(\d+)/)?.[2]}" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="TikTok Video" href="${selectedSocialPost.post_url}">TikTok Video</a> </section> </blockquote>`
-              : `<blockquote class="instagram-media" data-instgrm-permalink="${selectedSocialPost.post_url}" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote>`)
-          }
+          embedHtml={(() => {
+            if (selectedSocialPost.embed_code) return selectedSocialPost.embed_code;
+            
+            if (selectedSocialPost.source === "tiktok") {
+              const tiktokMatch = selectedSocialPost.post_url.match(/\/(video|photo)\/(\d+)/);
+              const videoId = tiktokMatch ? tiktokMatch[2] : "";
+              return `<blockquote class="tiktok-embed" cite="${selectedSocialPost.post_url}" data-video-id="${videoId}" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="TikTok Video" href="${selectedSocialPost.post_url}">TikTok Video</a> </section> </blockquote>`;
+            }
+            
+            return `<blockquote class="instagram-media" data-instgrm-permalink="${selectedSocialPost.post_url}" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote>`;
+          })()}
           caption={selectedSocialPost.caption || undefined}
           onClose={() => setSelectedSocialPost(null)}
         />
