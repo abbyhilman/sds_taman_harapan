@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import {
   Users,
   GraduationCap,
   BookOpen,
   School,
-  X,
   ChevronRight,
   Award,
 } from "lucide-react";
@@ -36,9 +36,9 @@ const positionLabels: Record<string, string> = {
 };
 
 export default function Teachers() {
+  const navigate = useNavigate();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [activeFilter, setActiveFilter] = useState("Semua");
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function Teachers() {
                 <div
                   key={teacher.id}
                   className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-                  onClick={() => setSelectedTeacher(teacher)}
+                  onClick={() => navigate(`/teachers/${teacher.id}`)}
                 >
                   <div className="p-6 text-center">
                     <div className="relative inline-block mb-4">
@@ -250,152 +250,190 @@ export default function Teachers() {
             </div>
           </>
         )}
-      </div>
 
-      {/* Detail Modal */}
-      {selectedTeacher && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setSelectedTeacher(null)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative bg-gradient-to-br from-cyan-500 to-blue-600 p-8 text-white rounded-t-2xl">
-              <button
-                onClick={() => setSelectedTeacher(null)}
-                className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-6">
-                <img
-                  src={
-                    selectedTeacher.photo_url ||
-                    getDefaultPhoto(selectedTeacher.position)
-                  }
-                  alt={selectedTeacher.full_name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white/30"
-                />
-                <div>
-                  <h3 className="text-2xl font-bold">
-                    {selectedTeacher.full_name}
+        {/* Organizational Chart Section */}
+        {!loading && teachers.length > 0 && (
+              <div className="mt-16">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Struktur Organisasi Pengajar
                   </h3>
-                  <p className="text-cyan-100 mt-1">
-                    {positionLabels[selectedTeacher.position] ||
-                      selectedTeacher.position}
-                  </p>
-                  {selectedTeacher.nip && (
-                    <p className="text-cyan-200 text-sm mt-1">
-                      NIP: {selectedTeacher.nip}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {selectedTeacher.bio && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                    Bio
-                  </h4>
-                  <p className="text-gray-700 leading-relaxed">
-                    {selectedTeacher.bio}
+                  <p className="text-gray-600">
+                    Hierarki dan pembagian tugas tenaga pengajar SDS Taman Harapan
                   </p>
                 </div>
-              )}
+                <div className="bg-white rounded-2xl shadow-lg p-8">
+                  <div className="space-y-6">
+                    {/* Kepala Sekolah */}
+                    {teachers.filter((t) => t.position === "Kepala Sekolah").length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
+                          Kepala Sekolah
+                        </h4>
+                        <div className="flex flex-wrap justify-center gap-4">
+                          {teachers
+                            .filter((t) => t.position === "Kepala Sekolah")
+                            .map((teacher) => (
+                              <OrgChartCard
+                                key={teacher.id}
+                                teacher={teacher}
+                                color="from-red-500 to-orange-500"
+                                onClick={() => navigate(`/teachers/${teacher.id}`)}
+                              />
+                            ))}
+                        </div>
+                      </div>
+                    )}
 
-              <div className="grid grid-cols-2 gap-4">
-                {selectedTeacher.education && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-cyan-600 mb-1">
-                      <GraduationCap className="h-4 w-4" />
-                      <span className="text-xs font-semibold uppercase">
-                        Pendidikan
-                      </span>
-                    </div>
-                    <p className="text-gray-900 font-medium">
-                      {selectedTeacher.education}
-                    </p>
+                    {/* Wakil Kepala Sekolah */}
+                    {teachers.filter((t) => t.position === "Wakil Kepala Sekolah").length > 0 && (
+                      <>
+                        <div className="flex justify-center">
+                          <div className="w-0.5 h-6 bg-gray-300"></div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
+                            Wakil Kepala Sekolah
+                          </h4>
+                          <div className="flex flex-wrap justify-center gap-4">
+                            {teachers
+                              .filter((t) => t.position === "Wakil Kepala Sekolah")
+                              .map((teacher) => (
+                                <OrgChartCard
+                                  key={teacher.id}
+                                  teacher={teacher}
+                                  color="from-orange-500 to-amber-500"
+                                  onClick={() => navigate(`/teachers/${teacher.id}`)}
+                                />
+                              ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Wali Kelas */}
+                    {teachers.filter((t) => t.position === "Wali Kelas").length > 0 && (
+                      <>
+                        <div className="flex justify-center">
+                          <div className="w-0.5 h-6 bg-gray-300"></div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
+                            Wali Kelas
+                          </h4>
+                          <div className="flex flex-wrap justify-center gap-4">
+                            {teachers
+                              .filter((t) => t.position === "Wali Kelas")
+                              .map((teacher) => (
+                                <OrgChartCard
+                                  key={teacher.id}
+                                  teacher={teacher}
+                                  color="from-cyan-500 to-blue-500"
+                                  onClick={() => navigate(`/teachers/${teacher.id}`)}
+                                />
+                              ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Guru Mata Pelajaran */}
+                    {teachers.filter((t) => t.position === "Guru Mata Pelajaran").length > 0 && (
+                      <>
+                        <div className="flex justify-center">
+                          <div className="w-0.5 h-6 bg-gray-300"></div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
+                            Guru Mata Pelajaran
+                          </h4>
+                          <div className="flex flex-wrap justify-center gap-4">
+                            {teachers
+                              .filter((t) => t.position === "Guru Mata Pelajaran")
+                              .map((teacher) => (
+                                <OrgChartCard
+                                  key={teacher.id}
+                                  teacher={teacher}
+                                  color="from-green-500 to-teal-500"
+                                  onClick={() => navigate(`/teachers/${teacher.id}`)}
+                                />
+                              ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Guru Pendamping */}
+                    {teachers.filter((t) => t.position === "Guru Pendamping").length > 0 && (
+                      <>
+                        <div className="flex justify-center">
+                          <div className="w-0.5 h-6 bg-gray-300"></div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
+                            Guru Pendamping
+                          </h4>
+                          <div className="flex flex-wrap justify-center gap-4">
+                            {teachers
+                              .filter((t) => t.position === "Guru Pendamping")
+                              .map((teacher) => (
+                                <OrgChartCard
+                                  key={teacher.id}
+                                  teacher={teacher}
+                                  color="from-purple-500 to-pink-500"
+                                  onClick={() => navigate(`/teachers/${teacher.id}`)}
+                                />
+                              ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                )}
-                {selectedTeacher.alma_mater && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-cyan-600 mb-1">
-                      <School className="h-4 w-4" />
-                      <span className="text-xs font-semibold uppercase">
-                        Asal Sekolah
-                      </span>
-                    </div>
-                    <p className="text-gray-900 font-medium">
-                      {selectedTeacher.alma_mater}
-                    </p>
-                  </div>
-                )}
+                </div>
               </div>
-
-              {selectedTeacher.subjects.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                    Mata Pelajaran
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTeacher.subjects.map((subject, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center px-3 py-1.5 bg-cyan-50 text-cyan-700 text-sm rounded-lg"
-                      >
-                        <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-                        {subject}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedTeacher.classrooms.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                    Wali Kelas
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTeacher.classrooms.map((cls, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center px-3 py-1.5 bg-orange-50 text-orange-700 text-sm rounded-lg"
-                      >
-                        <School className="h-3.5 w-3.5 mr-1.5" />
-                        {cls}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedTeacher.expertise.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                    Keahlian
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTeacher.expertise.map((exp, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-700 text-sm rounded-lg"
-                      >
-                        <Award className="h-3.5 w-3.5 mr-1.5" />
-                        {exp}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
+  );
+}
+
+interface OrgChartCardProps {
+  teacher: Teacher;
+  color: string;
+  onClick: () => void;
+}
+
+function OrgChartCard({ teacher, color, onClick }: OrgChartCardProps) {
+  const getDefaultPhoto = (position: string) => {
+    if (position.includes("Kepala")) return "/images/guru-laki.png";
+    return "/images/guru-wanita.png";
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className="group bg-white border-2 border-gray-200 hover:border-cyan-400 rounded-xl p-4 text-center transition-all duration-300 hover:shadow-lg cursor-pointer max-w-[200px]"
+    >
+      <img
+        src={teacher.photo_url || getDefaultPhoto(teacher.position)}
+        alt={teacher.full_name}
+        className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 group-hover:border-cyan-300 mx-auto mb-2 transition-colors"
+      />
+      <h5 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+        {teacher.full_name}
+      </h5>
+      <span
+        className={`inline-block text-xs text-white px-2 py-0.5 rounded-full bg-gradient-to-r ${color}`}
+      >
+        {positionLabels[teacher.position] || teacher.position}
+      </span>
+      {teacher.classrooms.length > 0 && (
+        <p className="text-xs text-gray-500 mt-1">
+          {teacher.classrooms.slice(0, 2).join(", ")}
+        </p>
+      )}
+    </button>
   );
 }

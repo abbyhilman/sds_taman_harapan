@@ -6,6 +6,7 @@ import { GalleryCardSkeleton } from "../ui/Skeleton";
 import ImageLightbox from "../ui/ImageLightbox";
 import VideoLightbox from "../ui/VideoLightbox";
 import { motion, useInView } from "framer-motion";
+import SocialMedia from "./SocialMedia";
 
 interface PhotoItem {
   id: string;
@@ -278,6 +279,9 @@ const Gallery: React.FC = () => {
                 ))}
               </motion.div>
             )}
+
+            {/* Social Media Posts Section */}
+            <SocialMedia />
 
             {(photos.length > 4 || videos.length > 1) && (
               <motion.div

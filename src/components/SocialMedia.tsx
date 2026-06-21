@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Instagram, Video, X } from "lucide-react";
+import { Instagram, Video, X, ExternalLink } from "lucide-react";
 import NewsShimmer from "./NewsShimeer";
 
 interface SocialMediaPost {
@@ -22,12 +22,41 @@ function getInstagramEmbedUrl(postUrl: string): string | null {
   return null;
 }
 
-function getTiktokEmbedUrl(postUrl: string): string | null {
-  const match = postUrl.match(/\/video\/(\d+)/);
+function getInstagramThumbnailUrl(postUrl: string): string | null {
+  const match = postUrl.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/);
   if (match) {
-    return `https://www.tiktok.com/embed/v2/${match[1]}`;
+    const shortcode = match[2];
+    return `https://www.instagram.com/p/${shortcode}/media/?size=l`;
   }
   return null;
+}
+
+function getTiktokVideoId(postUrl: string): string | null {
+  const match = postUrl.match(/\/video\/(\d+)/);
+  if (match) {
+    return match[1];
+  }
+  return null;
+}
+
+function generateTiktokEmbedHtml(videoId: string, postUrl: string): string {
+  return `<blockquote class="tiktok-embed" cite="${postUrl}" data-video-id="${videoId}" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="TikTok Video" href="${postUrl}">TikTok Video</a> </section> </blockquote>`;
+}
+
+// Load TikTok embed script once when component mounts
+function loadTiktokEmbedScript(): Promise<void> {
+  return new Promise((resolve) => {
+    if (document.querySelector('script[src="https://www.tiktok.com/embed.js"]')) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://www.tiktok.com/embed.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => resolve();
+    document.body.appendChild(script);
+  });
 }
 
 export default function SocialMedia() {
@@ -38,54 +67,67 @@ export default function SocialMedia() {
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("social_media_posts")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order", { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from("social_media_posts")
+          .select("*")
+          .eq("is_active", true)
+          .order("display_order", { ascending: true });
 
-      if (error) {
-        console.error("Error fetching social media posts:", error);
-      } else {
-        setPosts(data || []);
+        if (error) {
+          console.warn("Social media posts not available:", error.message);
+          setPosts([]);
+        } else {
+          setPosts(data || []);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch social media posts:", err);
+        setPosts([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchPosts();
+    loadTiktokEmbedScript();
   }, []);
 
   if (posts.length === 0 && !loading) return null;
 
   return (
-    <section id="social-media" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Galeri Sekolah
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Ikuti kegiatan dan momen seru di SDS Taman Harapan melalui Instagram
-            dan TikTok kami.
-          </p>
-        </div>
-
-        {loading ? (
-          <NewsShimmer />
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
+    <>
+      {loading ? (
+        <NewsShimmer />
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post) => {
+            const instagramThumb = getInstagramThumbnailUrl(post.post_url);
+            
+            return (
               <div
                 key={post.id}
                 className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer border border-gray-100"
                 onClick={() => setSelectedPost(post)}
               >
-                <div className="relative h-64 bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
-                  {post.source === "instagram" ? (
-                    <Instagram className="h-20 w-20 text-pink-300 group-hover:text-pink-400 transition-colors" />
-                  ) : (
-                    <Video className="h-20 w-20 text-gray-300 group-hover:text-gray-400 transition-colors" />
-                  )}
+                <div className="relative h-64 bg-gradient-to-br from-pink-50 to-purple-50 overflow-hidden">
+                  {post.thumbnail_url || instagramThumb ? (
+                    <img
+                      src={post.thumbnail_url || instagramThumb!}
+                      alt={post.caption || "Social media post"}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={`${post.thumbnail_url || instagramThumb ? 'hidden' : ''} absolute inset-0 flex items-center justify-center`}>
+                    {post.source === "instagram" ? (
+                      <Instagram className="h-20 w-20 text-pink-300 group-hover:text-pink-400 transition-colors" />
+                    ) : (
+                      <Video className="h-20 w-20 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                    )}
+                  </div>
                   <div className="absolute top-4 left-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium text-white ${
@@ -98,8 +140,9 @@ export default function SocialMedia() {
                     </span>
                   </div>
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-gray-900">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-gray-900 flex items-center gap-2">
                       Lihat Postingan
+                      <ExternalLink className="h-4 w-4" />
                     </span>
                   </div>
                 </div>
@@ -109,10 +152,10 @@ export default function SocialMedia() {
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Embed Modal */}
       {selectedPost && (
@@ -158,25 +201,32 @@ export default function SocialMedia() {
                   className="rounded-xl"
                   title="Instagram embed"
                 />
-              ) : selectedPost.source === "tiktok" && getTiktokEmbedUrl(selectedPost.post_url) ? (
-                <iframe
-                  src={getTiktokEmbedUrl(selectedPost.post_url)!}
-                  width="100%"
-                  height="580"
-                  frameBorder="0"
-                  allowFullScreen
-                  className="rounded-xl"
-                  title="TikTok embed"
+              ) : selectedPost.source === "tiktok" && getTiktokVideoId(selectedPost.post_url) ? (
+                <div
+                  className="flex justify-center"
+                  dangerouslySetInnerHTML={{ __html: generateTiktokEmbedHtml(getTiktokVideoId(selectedPost.post_url)!, selectedPost.post_url) }}
+                  key={selectedPost.id}
                 />
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-8 space-y-4">
+                  <div className="flex justify-center mb-4">
+                    {selectedPost.source === "instagram" ? (
+                      <Instagram className="h-16 w-16 text-pink-400" />
+                    ) : (
+                      <Video className="h-16 w-16 text-gray-400" />
+                    )}
+                  </div>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Postingan {selectedPost.source === "instagram" ? "Instagram" : "TikTok"} tidak dapat di-embed langsung.
+                  </p>
                   <a
                     href={selectedPost.post_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-medium hover:shadow-lg transition-shadow"
                   >
-                    Lihat di {selectedPost.source === "instagram" ? "Instagram" : "TikTok"}
+                    <ExternalLink className="h-4 w-4" />
+                    Buka di {selectedPost.source === "instagram" ? "Instagram" : "TikTok"}
                   </a>
                 </div>
               )}
@@ -187,6 +237,6 @@ export default function SocialMedia() {
           </div>
         </div>
       )}
-    </section>
+    </>
   );
 }

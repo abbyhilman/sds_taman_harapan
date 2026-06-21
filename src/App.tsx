@@ -8,7 +8,7 @@ import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
 import PPDB from "./components/PPDB";
 import PublicPPDBPage from "./components/PublicPPDBPage";
 import Teachers from "./components/Teachers";
-import SocialMedia from "./components/SocialMedia";
+const TeacherDetail = React.lazy(() => import("./components/TeacherDetail"));
 import AppLoadingScreen from "./ui/AppLoadingScreen";
 import ScrollAnimate from "./ui/ScrollAnimate";
 
@@ -119,10 +119,6 @@ const App: React.FC = () => {
                     <News />
                   </ScrollAnimate>
 
-                  <ScrollAnimate variant="fade-up" delay={0}>
-                    <SocialMedia />
-                  </ScrollAnimate>
-
                   <ScrollAnimate variant="fade-up" delay={50}>
                     <Contact />
                   </ScrollAnimate>
@@ -134,6 +130,7 @@ const App: React.FC = () => {
             <Route path="/news/:id" element={<NewsDetail />} />
             <Route path="/all-gallery" element={<AllGallery />} />
             <Route path="/ppdb" element={<PublicPPDBPage />} />
+            <Route path="/teachers/:id" element={<TeacherDetail />} />
           </Routes>
         </Suspense>
 
