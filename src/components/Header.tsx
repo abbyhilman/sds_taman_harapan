@@ -175,16 +175,18 @@ export default function Header({
                     <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                   {openDropdown === item.id && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-in fade-in slide-in-from-top-2">
-                      {item.dropdown.map((sub) => (
-                        <button
-                          key={sub.id + sub.label}
-                          onClick={() => goToSection(sub.id)}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-                        >
-                          {sub.label}
-                        </button>
-                      ))}
+                    <div className="absolute top-full left-0 w-48 pt-2 animate-in fade-in slide-in-from-top-2">
+                      <div className="bg-white rounded-xl shadow-xl border border-gray-100 py-2">
+                        {item.dropdown.map((sub) => (
+                          <button
+                            key={sub.id + sub.label}
+                            onClick={() => goToSection(sub.id)}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                          >
+                            {sub.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -14,6 +14,51 @@ interface SocialMediaPost {
   is_active: boolean;
 }
 
+// Default posts to show if database is empty
+const defaultPosts: SocialMediaPost[] = [
+  {
+    id: "default-ig-1",
+    source: "instagram",
+    post_url: "https://www.instagram.com/sds_taman_harapan",
+    embed_code: null,
+    thumbnail_url: null,
+    caption: "Follow kami di Instagram @sds_taman_harapan untuk update terbaru!",
+    display_order: 0,
+    is_active: true,
+  },
+  {
+    id: "default-tt-1",
+    source: "tiktok",
+    post_url: "https://www.tiktok.com/@sds.taman.harapan",
+    embed_code: null,
+    thumbnail_url: null,
+    caption: "Follow kami di TikTok @sds.taman.harapan untuk video kegiatan seru!",
+    display_order: 1,
+    is_active: true,
+  },
+];
+
+function getInstagramEmbedUrl(postUrl: string): string | null {
+  const match = postUrl.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/);
+  if (match) {
+    const type = match[1];
+    const shortcode = match[2];
+    return `https://www.instagram.com/${type}/${shortcode}/embed`;
+  }
+  return null;
+}
+
+function getTiktokEmbedData(postUrl: string): { embedUrl: string | null; videoId: string | null } {
+  const match = postUrl.match(/\/video\/(\d+)/);
+  if (match) {
+    return {
+      videoId: match[1],
+      embedUrl: `https://www.tiktok.com/embed/v2/${match[1]}`,
+    };
+  }
+  return { embedUrl: null, videoId: null };
+}
+
 export default function SocialMedia() {
   const [posts, setPosts] = useState<SocialMediaPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,16 +75,17 @@ export default function SocialMedia() {
 
       if (error) {
         console.error("Error fetching social media posts:", error);
+        setPosts(defaultPosts);
+      } else if (data && data.length > 0) {
+        setPosts(data);
       } else {
-        setPosts(data || []);
+        setPosts(defaultPosts);
       }
       setLoading(false);
     };
 
     fetchPosts();
   }, []);
-
-  if (posts.length === 0 && !loading) return null;
 
   return (
     <section id="social-media" className="py-20 bg-white">
@@ -78,44 +124,49 @@ export default function SocialMedia() {
           <NewsShimmer />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer border border-gray-100"
-                onClick={() => setSelectedPost(post)}
-              >
-                <div className="relative h-64 bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
-                  {post.source === "instagram" ? (
-                    <Instagram className="h-20 w-20 text-pink-300 group-hover:text-pink-400 transition-colors" />
-                  ) : (
-                    <Video className="h-20 w-20 text-gray-300 group-hover:text-gray-400 transition-colors" />
-                  )}
-                  <div className="absolute top-4 left-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium text-white ${
-                        post.source === "instagram"
-                          ? "bg-pink-500"
-                          : "bg-gray-800"
-                      }`}
-                    >
-                      {post.source === "instagram" ? "Instagram" : "TikTok"}
-                    </span>
+            {posts.map((post) => {
+              const igEmbedUrl = post.source === "instagram" ? getInstagramEmbedUrl(post.post_url) : null;
+              const ttEmbedData = post.source === "tiktok" ? getTiktokEmbedData(post.post_url) : null;
+
+              return (
+                <div
+                  key={post.id}
+                  className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer border border-gray-100"
+                  onClick={() => setSelectedPost(post)}
+                >
+                  <div className="relative h-64 bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+                    {post.source === "instagram" ? (
+                      <Instagram className="h-20 w-20 text-pink-300 group-hover:text-pink-400 transition-colors" />
+                    ) : (
+                      <Video className="h-20 w-20 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                    )}
+                    <div className="absolute top-4 left-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium text-white ${
+                          post.source === "instagram"
+                            ? "bg-pink-500"
+                            : "bg-gray-800"
+                        }`}
+                      >
+                        {post.source === "instagram" ? "Instagram" : "TikTok"}
+                      </span>
+                    </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-gray-900">
+                        Lihat Postingan
+                      </span>
+                    </div>
                   </div>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-gray-900">
-                      Lihat Postingan
-                    </span>
+                  <div className="p-6">
+                    {post.caption && (
+                      <p className="text-gray-600 line-clamp-2">
+                        {post.caption}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="p-6">
-                  {post.caption && (
-                    <p className="text-gray-600 line-clamp-2">
-                      {post.caption}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -153,6 +204,26 @@ export default function SocialMedia() {
                 <div
                   className="flex justify-center"
                   dangerouslySetInnerHTML={{ __html: selectedPost.embed_code }}
+                />
+              ) : selectedPost.source === "instagram" && getInstagramEmbedUrl(selectedPost.post_url) ? (
+                <iframe
+                  src={getInstagramEmbedUrl(selectedPost.post_url)!}
+                  width="100%"
+                  height="480"
+                  frameBorder="0"
+                  scrolling="no"
+                  className="rounded-xl"
+                  title="Instagram embed"
+                />
+              ) : selectedPost.source === "tiktok" && getTiktokEmbedData(selectedPost.post_url).embedUrl ? (
+                <iframe
+                  src={getTiktokEmbedData(selectedPost.post_url).embedUrl!}
+                  width="100%"
+                  height="580"
+                  frameBorder="0"
+                  allowFullScreen
+                  className="rounded-xl"
+                  title="TikTok embed"
                 />
               ) : (
                 <div className="text-center py-8">
