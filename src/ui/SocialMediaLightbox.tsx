@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ZoomIn } from 'lucide-react';
+import { processSocialEmbeds } from '../utils/socialMedia';
 
 interface SocialMediaLightboxProps {
   source: 'instagram' | 'tiktok';
@@ -48,6 +49,10 @@ export default function SocialMediaLightbox({ source, embedHtml, caption, onClos
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  useEffect(() => {
+    processSocialEmbeds();
+  }, [embedHtml]);
+
   const handleClose = () => {
     const overlay = overlayRef.current;
     const panel = panelRef.current;
@@ -84,16 +89,16 @@ export default function SocialMediaLightbox({ source, embedHtml, caption, onClos
     <div
       ref={overlayRef}
       onClick={handleClose}
-      className="fixed inset-0 z-[9999] flex min-h-screen w-screen items-center justify-center bg-slate-950/80 px-3 py-4 sm:px-6 sm:py-8"
+      className="fixed inset-0 z-[9999] flex min-h-screen w-screen items-center justify-center bg-slate-950/85 px-3 py-4 sm:px-6 sm:py-8"
       role="dialog"
       aria-modal="true"
-      aria-label={caption || 'Social media post'}
+      aria-label={caption || `${source === 'instagram' ? 'Instagram' : 'TikTok'} post`}
       style={{ opacity: 0 }}
     >
       <div
         ref={panelRef}
         onClick={(event) => event.stopPropagation()}
-        className="relative flex h-full max-h-[calc(100vh-2rem)] w-full max-w-3xl flex-col items-center justify-center"
+        className="relative flex h-full max-h-[calc(100vh-2rem)] w-full max-w-7xl flex-col items-center justify-center"
         style={{ opacity: 0, transform: 'scale(0.92) translateY(12px)' }}
       >
         <button
@@ -106,7 +111,7 @@ export default function SocialMediaLightbox({ source, embedHtml, caption, onClos
 
         <div className="flex max-h-full w-full flex-1 items-center justify-center overflow-hidden rounded-2xl">
           <div
-            className="max-h-[calc(100vh-7rem)] w-full overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl"
+            className="flex max-h-[calc(100vh-7rem)] min-h-[70vh] w-full max-w-3xl items-start justify-center overflow-y-auto rounded-2xl bg-white p-3 shadow-2xl shadow-black/60 sm:p-5"
             dangerouslySetInnerHTML={{ __html: embedHtml }}
           />
         </div>

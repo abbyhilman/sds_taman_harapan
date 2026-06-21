@@ -3,10 +3,18 @@ import { supabase } from "../lib/supabase";
 import { Instagram, Video, ExternalLink } from "lucide-react";
 import NewsShimmer from "./NewsShimeer";
 import SocialMediaLightbox from "../ui/SocialMediaLightbox";
+import {
+  fetchTiktokThumbnail,
+  getSocialEmbedHtml,
+  getSocialFallbackThumbnail,
+  getSocialStaticFallbackCover,
+  loadSocialEmbedScripts,
+  type SocialMediaSource,
+} from "../utils/socialMedia";
 
 interface SocialMediaPost {
   id: string;
-  source: "instagram" | "tiktok";
+  source: SocialMediaSource;
   post_url: string;
   embed_code: string | null;
   thumbnail_url: string | null;
@@ -15,67 +23,11 @@ interface SocialMediaPost {
   is_active: boolean;
 }
 
-function getInstagramEmbedUrl(postUrl: string): string | null {
-  const match = postUrl.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/);
-  if (match) {
-    return `https://www.instagram.com/${match[1]}/${match[2]}/embed`;
-  }
-  return null;
-}
-
-function getInstagramThumbnailUrl(postUrl: string): string | null {
-  const match = postUrl.match(/\/(p|reel)\/([a-zA-Z0-9_-]+)/);
-  if (match) {
-    const shortcode = match[2];
-    return `https://www.instagram.com/p/${shortcode}/media/?size=l`;
-  }
-  return null;
-}
-
-function getTiktokVideoId(postUrl: string): string | null {
-  const match = postUrl.match(/\/(video|photo)\/(\d+)/);
-  if (match) {
-    return match[2];
-  }
-  return null;
-}
-
-function generateTiktokEmbedHtml(videoId: string, postUrl: string): string {
-  return `<blockquote class="tiktok-embed" cite="${postUrl}" data-video-id="${videoId}" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="TikTok Video" href="${postUrl}">TikTok Video</a> </section> </blockquote>`;
-}
-
-function generateInstagramEmbedHtml(postUrl: string): string {
-  return `<blockquote class="instagram-media" data-instgrm-permalink="${postUrl}" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote>`;
-}
-
-function loadEmbedScripts(): Promise<void> {
-  return new Promise((resolve) => {
-    // Load TikTok embed script
-    if (!document.querySelector('script[src="https://www.tiktok.com/embed.js"]')) {
-      const tiktokScript = document.createElement('script');
-      tiktokScript.src = 'https://www.tiktok.com/embed.js';
-      tiktokScript.async = true;
-      tiktokScript.onload = () => {};
-      tiktokScript.onerror = () => {};
-      document.body.appendChild(tiktokScript);
-    }
-    
-    // Load Instagram embed script
-    if (!document.querySelector('script[src="//www.instagram.com/embed.js"]')) {
-      const instagramScript = document.createElement('script');
-      instagramScript.src = '//www.instagram.com/embed.js';
-      instagramScript.async = true;
-      document.body.appendChild(instagramScript);
-    }
-    
-    resolve();
-  });
-}
-
 export default function SocialMedia() {
   const [posts, setPosts] = useState<SocialMediaPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<SocialMediaPost | null>(null);
+  const [socialThumbnails, setSocialThumbnails] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -102,24 +54,21 @@ export default function SocialMedia() {
     };
 
     fetchPosts();
-    loadEmbedScripts();
+    loadSocialEmbedScripts();
   }, []);
 
-  if (posts.length === 0 && !loading) return null;
+  useEffect(() => {
+    posts
+      .filter((post) => post.source === "tiktok" && !getSocialFallbackThumbnail(post) && !socialThumbnails[post.id])
+      .forEach((post) => {
+        fetchTiktokThumbnail(post.post_url).then((thumbnail) => {
+          if (!thumbnail) return;
+          setSocialThumbnails((prev) => ({ ...prev, [post.id]: thumbnail }));
+        });
+      });
+  }, [posts, socialThumbnails]);
 
-  const getEmbedHtml = (post: SocialMediaPost): string => {
-    if (post.embed_code) return post.embed_code;
-    
-    if (post.source === "tiktok" && getTiktokVideoId(post.post_url)) {
-      return generateTiktokEmbedHtml(getTiktokVideoId(post.post_url)!, post.post_url);
-    }
-    
-    if (post.source === "instagram") {
-      return generateInstagramEmbedHtml(post.post_url);
-    }
-    
-    return '';
-  };
+  if (posts.length === 0 && !loading) return null;
 
   return (
     <>
@@ -128,8 +77,10 @@ export default function SocialMedia() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => {
-            const instagramThumb = getInstagramThumbnailUrl(post.post_url);
-            const thumbnailSrc = post.thumbnail_url || instagramThumb;
+            const thumbnailSrc =
+              getSocialFallbackThumbnail(post) ||
+              socialThumbnails[post.id] ||
+              getSocialStaticFallbackCover(post);
             
             return (
               <div
@@ -190,7 +141,7 @@ export default function SocialMedia() {
       {selectedPost && (
         <SocialMediaLightbox
           source={selectedPost.source}
-          embedHtml={getEmbedHtml(selectedPost)}
+          embedHtml={getSocialEmbedHtml(selectedPost)}
           caption={selectedPost.caption || undefined}
           onClose={() => setSelectedPost(null)}
         />
