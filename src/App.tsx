@@ -18,6 +18,8 @@ import AllPrestasi from "./components/AllPrestasi";
 import FloatingWhatsappButton from "./ui/FloatingWhatsappButton";
 import PPDB from "./components/PPDB";
 import PublicPPDBPage from "./components/PublicPPDBPage";
+import Teachers from "./components/Teachers";
+import SocialMedia from "./components/SocialMedia";
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -66,11 +68,12 @@ const App: React.FC = () => {
                 <About />
                 <Programs />
                 <Facilities />
-              
+                <Teachers />
                 <Prestasi />
                 <Gallery />
                   <PPDB />
                 <News />
+                <SocialMedia />
                 <Contact />
               </>
             }
